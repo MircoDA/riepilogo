@@ -1,1556 +1,728 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>Regalo Stef — Gestione Quote (regalstef.xlsx)</title>
   <style>
-    /* ==========================================================================
-       DESIGN TOKENS & RESET (100% Autonomo: zero CDN o librerie esterne)
-       ========================================================================== */
     :root {
-      --bg-page: #f1f5f3;
-      --bg-surface: #ffffff;
-      --bg-subtle: #f8fafc;
-      --bg-excel-hdr: #eef2f0;
-      --excel-green: #107c41;
-      --excel-green-dark: #0b5c30;
-      --excel-green-light: #e7f5ee;
-      --excel-green-border: #b7dec9;
-      --slate-dark: #1e293b;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #64748b;
-      --border-color: #dbe3df;
-      --border-grid: #cbd5e1;
-
-      /* Colori di stato */
-      --stato-pagato-bg: #dcfce7;
-      --stato-pagato-text: #166534;
-      --stato-pagato-border: #86efac;
-
-      --stato-dare-bg: #fee2e2;
-      --stato-dare-text: #991b1b;
-      --stato-dare-border: #fca5a5;
-
-      --stato-dara-bg: #fef3c7;
-      --stato-dara-text: #92400e;
-      --stato-dara-border: #fcd34d;
-
-      --stato-rit-bg: #e0e7ff;
-      --stato-rit-text: #3730a3;
-      --stato-rit-border: #a5b4fc;
-
-      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 14px;
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #dde3ec;
+      --text: #182230;
+      --muted: #5b6777;
+      --primary: #1d6f42;
+      --primary-hover: #155632;
+      --primary-soft: #e8f5ee;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --amber: #b45309;
+      --amber-soft: #fef3c7;
+      --red: #b91c1c;
+      --red-soft: #fee2e2;
+      --purple: #6d28d9;
+      --purple-soft: #ede9fe;
+      --radius: 12px;
+      --shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
     }
 
-    *, *::before, *::after {
+    * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      background-color: var(--bg-page);
-      color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      font-size: 15px;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding-bottom: 40px;
     }
 
-    .num {
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum";
+    button, input, select {
+      font-family: inherit;
+      touch-action: manipulation;
     }
 
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    button {
+      cursor: pointer;
     }
 
-    /* ==========================================================================
-       BARRA SUPERIORE (HEADER)
-       ========================================================================== */
-    .app-header {
-      background: linear-gradient(135deg, #0b5c30 0%, #107c41 55%, #15803d 100%);
+    .header {
+      background: linear-gradient(135deg, #165b33 0%, #1d6f42 100%);
       color: #ffffff;
-      padding: 18px 20px;
-      box-shadow: 0 2px 10px rgba(11, 92, 48, 0.22);
+      padding: 18px 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
     }
 
     .header-inner {
-      max-width: 1260px;
+      max-width: 1120px;
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
       gap: 12px;
     }
 
-    .brand-icon {
-      width: 44px;
-      height: 44px;
-      background: rgba(255, 255, 255, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .brand h1 {
+    .header h1 {
       margin: 0;
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .brand-sub {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       gap: 8px;
-      margin-top: 3px;
-      font-size: 0.82rem;
-      color: rgba(255, 255, 255, 0.9);
     }
 
-    .file-pill {
-      background: rgba(0, 0, 0, 0.24);
-      padding: 2px 9px;
+    .badge-file {
+      font-size: 0.75rem;
+      background: rgba(255, 255, 255, 0.18);
+      padding: 3px 9px;
       border-radius: 999px;
-      font-size: 0.76rem;
       font-weight: 600;
+    }
+
+    .header-sub {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      opacity: 0.9;
     }
 
     .header-actions {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 9px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 0.86rem;
+    .btn-header {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 8px;
+      padding: 9px 13px;
+      font-size: 0.85rem;
       font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: background-color 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
-      min-height: 38px;
-      user-select: none;
+      min-height: 40px;
     }
 
-    .btn:active {
-      transform: translateY(1px);
+    .btn-header:active {
+      background: rgba(255, 255, 255, 0.28);
     }
 
-    .btn-header-primary {
-      background-color: #ffffff;
-      color: var(--excel-green-dark);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .btn-header-primary:hover {
-      background-color: #f0fdf4;
-    }
-
-    .btn-header-ghost {
-      background-color: rgba(255, 255, 255, 0.15);
-      color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .btn-header-ghost:hover {
-      background-color: rgba(255, 255, 255, 0.25);
-    }
-
-    /* ==========================================================================
-       NOTIFICHE / CONFERMA INLINE (Sostituisce alert e confirm)
-       ========================================================================== */
-    .toast-bar {
-      max-width: 1260px;
-      margin: 14px auto 0;
-      padding: 0 16px;
-      display: none;
-    }
-
-    .toast-bar.visible {
-      display: block;
-    }
-
-    .toast-content {
-      background: #ffffff;
-      border: 1px solid var(--excel-green-border);
-      border-left: 4px solid var(--excel-green);
-      border-radius: var(--radius-md);
-      padding: 12px 16px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      box-shadow: var(--shadow-md);
-    }
-
-    .toast-content.warning {
-      border-color: #fcd34d;
-      border-left-color: #d97706;
-      background: #fffbeb;
-    }
-
-    .toast-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 0.82rem;
-      min-height: 32px;
-    }
-
-    .btn-danger {
-      background: #dc2626;
-      color: #ffffff;
-    }
-
-    .btn-danger:hover {
-      background: #b91c1c;
-    }
-
-    .btn-neutral {
-      background: #e2e8f0;
-      color: #1e293b;
-    }
-
-    .btn-neutral:hover {
-      background: #cbd5e1;
-    }
-
-    /* ==========================================================================
-       CONTENITORE PRINCIPALE E SCHEDE (TABS)
-       ========================================================================== */
-    .main-container {
-      max-width: 1260px;
+    .container {
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 18px 16px 48px;
+      padding: 16px;
     }
 
-    .tabs-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 10px;
-    }
-
-    .tab-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      border-radius: var(--radius-md);
-      background: var(--bg-surface);
-      color: var(--text-secondary);
-      border: 1px solid var(--border-color);
-      font-size: 0.92rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .tab-btn:hover {
-      border-color: var(--excel-green);
-      color: var(--excel-green-dark);
-    }
-
-    .tab-btn.active {
-      background: var(--excel-green);
-      color: #ffffff;
-      border-color: var(--excel-green);
-      box-shadow: 0 2px 6px rgba(16, 124, 65, 0.25);
-    }
-
-    .tab-panel {
-      display: none;
-    }
-
-    .tab-panel.active {
-      display: block;
-    }
-
-    /* ==========================================================================
-       4 CARD KPI
-       ========================================================================== */
+    /* KPI Cards */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
-    @media (min-width: 600px) {
+    @media (max-width: 820px) {
       .kpi-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .kpi-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
     .kpi-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 16px 18px;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
     }
 
-    .kpi-card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--excel-green);
-    }
-
-    .kpi-card.kpi-slate::before {
-      background: #334155;
-    }
-
-    .kpi-card.kpi-amber::before {
-      background: #d97706;
-    }
-
-    .kpi-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .kpi-title {
-      font-size: 0.8rem;
+    .kpi-label {
+      font-size: 0.78rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      color: var(--text-secondary);
-    }
-
-    .cell-tag {
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 5px;
-      background: var(--excel-green-light);
-      color: var(--excel-green-dark);
-      border: 1px solid var(--excel-green-border);
+      color: var(--muted);
+      margin-bottom: 4px;
     }
 
     .kpi-value {
-      font-size: 1.75rem;
+      font-size: 1.55rem;
       font-weight: 800;
-      color: var(--text-primary);
-      line-height: 1.15;
-      margin-bottom: 6px;
+      color: var(--text);
     }
 
-    .kpi-sub {
-      font-size: 0.79rem;
-      color: var(--text-muted);
+    .kpi-value.green { color: var(--primary); }
+    .kpi-value.blue { color: var(--blue); }
+    .kpi-value.amber { color: var(--amber); }
+
+    .kpi-note {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 4px;
     }
 
-    .progress-track {
-      width: 100%;
-      height: 6px;
-      background: #e2e8f0;
-      border-radius: 999px;
-      margin-top: 8px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--excel-green);
-      border-radius: 999px;
-      transition: width 0.25s ease;
-    }
-
-    /* ==========================================================================
-       BARRA RICERCA E FILTRI RAPIDI
-       ========================================================================== */
-    .controls-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow-sm);
+    /* Main Tabs */
+    .tabs-bar {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
+      margin-bottom: 14px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
     }
 
-    .search-box {
-      position: relative;
-      flex: 1 1 260px;
-      max-width: 440px;
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+      padding: 11px 12px;
+      border-radius: 8px;
+      min-height: 44px;
+      transition: background 0.15s, color 0.15s;
     }
 
-    .search-icon {
-      position: absolute;
-      left: 11px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-      pointer-events: none;
+    .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    /* Panels */
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    /* Filters & Search */
+    .toolbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .search-input {
       width: 100%;
-      padding: 9px 34px 9px 36px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      font-size: 0.9rem;
-      color: var(--text-primary);
-      background: var(--bg-subtle);
-      transition: border-color 0.15s, background-color 0.15s;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      background: var(--surface-alt);
+      color: var(--text);
     }
 
     .search-input:focus {
       outline: none;
-      border-color: var(--excel-green);
-      background: #ffffff;
-      box-shadow: 0 0 0 3px rgba(16, 124, 65, 0.12);
-    }
-
-    .search-clear {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 4px;
-      display: none;
-    }
-
-    .search-clear.visible {
-      display: block;
+      border-color: var(--primary);
+      background: #fff;
     }
 
     .filter-pills {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
     }
 
-    .filter-pill {
-      padding: 7px 12px;
+    .pill-btn {
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      padding: 8px 14px;
       border-radius: 999px;
-      border: 1px solid var(--border-color);
-      background: var(--bg-subtle);
-      color: var(--text-secondary);
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
+      min-height: 40px;
     }
 
-    .filter-pill:hover {
-      border-color: var(--excel-green);
-      color: var(--excel-green-dark);
+    .pill-btn.active {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
     }
 
-    .filter-pill.active {
-      background: var(--slate-dark);
-      color: #ffffff;
-      border-color: var(--slate-dark);
-    }
-
-    /* ==========================================================================
-       TABELLA INTERATTIVA PARTECIPANTI (RIGHE 2–15)
-       ========================================================================== */
-    .table-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-sm);
+    /* Table / Responsive Cards */
+    .card-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       overflow: hidden;
-      margin-bottom: 22px;
+      margin-bottom: 16px;
     }
 
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    table.data-table {
+    .data-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 740px;
     }
 
     .data-table th {
-      background: var(--bg-excel-hdr);
-      color: var(--text-secondary);
+      background: var(--surface-alt);
+      color: var(--muted);
       font-size: 0.78rem;
-      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      padding: 11px 14px;
       text-align: left;
-      border-bottom: 1px solid var(--border-color);
-      white-space: nowrap;
-    }
-
-    .data-table th.text-right,
-    .data-table td.text-right {
-      text-align: right;
-    }
-
-    .data-table th.text-center,
-    .data-table td.text-center {
-      text-align: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
     }
 
     .data-table td {
-      padding: 11px 14px;
-      border-bottom: 1px solid #edf2ef;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
       vertical-align: middle;
     }
 
-    .data-table tbody tr:hover {
-      background-color: #f8fbf9;
+    .data-table tr:last-child td {
+      border-bottom: none;
     }
 
-    .data-table tbody tr.row-group {
-      background-color: #fafdfb;
-    }
-
-    .row-idx {
-      display: inline-block;
-      min-width: 26px;
-      text-align: center;
-      font-size: 0.76rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      background: #f1f5f9;
-      border-radius: 4px;
-      padding: 2px 5px;
+    .row-paid {
+      background: #f5fbf7;
     }
 
     .person-name {
       font-weight: 700;
-      font-size: 0.96rem;
-      color: var(--text-primary);
+      font-size: 1rem;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .group-badge {
-      font-size: 0.7rem;
-      font-weight: 700;
-      background: var(--excel-green-light);
-      color: var(--excel-green-dark);
-      border: 1px solid var(--excel-green-border);
-      padding: 1px 7px;
-      border-radius: 999px;
+    .row-coord {
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: #eef2f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
     }
 
-    .submembers-list {
+    .group-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 4px;
       margin-top: 6px;
     }
 
-    .submember-chip {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+    .member-tag {
+      font-size: 0.74rem;
+      background: var(--purple-soft);
+      color: var(--purple);
       padding: 2px 8px;
       border-radius: 999px;
-      transition: all 0.15s ease;
-    }
-
-    .submember-chip.highlight {
-      background: #fef08a;
-      border-color: #eab308;
-      color: #713f12;
-      font-weight: 700;
-    }
-
-    .stima-amount {
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: var(--text-primary);
+      font-weight: 600;
     }
 
     .formula-hint {
-      display: inline-block;
-      margin-top: 2px;
+      display: block;
       font-size: 0.73rem;
-      color: var(--excel-green-dark);
-      background: var(--excel-green-light);
-      padding: 1px 6px;
-      border-radius: 4px;
+      color: var(--muted);
     }
 
-    .effettivo-wrap {
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 4px;
-    }
-
-    .effettivo-input {
-      width: 82px;
-      padding: 6px 8px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
+    .num-input {
+      width: 92px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
       text-align: right;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      background: #ffffff;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      background: #fff;
+      color: var(--text);
     }
 
-    .effettivo-input:focus {
+    .num-input:focus {
       outline: none;
-      border-color: var(--excel-green);
-      box-shadow: 0 0 0 3px rgba(16, 124, 65, 0.14);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(29, 111, 66, 0.15);
     }
 
-    .effettivo-input::placeholder {
-      color: #94a3b8;
-      font-weight: 400;
-    }
-
-    .stato-select {
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.8rem;
+    .status-select {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
       font-weight: 700;
-      cursor: pointer;
-      border: 1px solid transparent;
-      min-width: 96px;
-      text-align: center;
+      min-height: 40px;
+      background: #fff;
     }
 
-    .stato-select:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(16, 124, 65, 0.16);
-    }
+    .st-paid { background: var(--primary-soft); color: var(--primary); border-color: #b7e4c7; }
+    .st-dare { background: var(--red-soft); color: var(--red); border-color: #fecaca; }
+    .st-dara { background: var(--amber-soft); color: var(--amber); border-color: #fde68a; }
+    .st-rit { background: var(--blue-soft); color: var(--blue); border-color: #bfdbfe; }
 
-    .stato-Pagato {
-      background-color: var(--stato-pagato-bg);
-      color: var(--stato-pagato-text);
-      border-color: var(--stato-pagato-border);
-    }
-
-    .stato-DARE {
-      background-color: var(--stato-dare-bg);
-      color: var(--stato-dare-text);
-      border-color: var(--stato-dare-border);
-    }
-
-    .stato-DARA {
-      background-color: var(--stato-dara-bg);
-      color: var(--stato-dara-text);
-      border-color: var(--stato-dara-border);
-    }
-
-    .stato-rit {
-      background-color: var(--stato-rit-bg);
-      color: var(--stato-rit-text);
-      border-color: var(--stato-rit-border);
-    }
-
-    .btn-pay-quick {
-      padding: 5px 10px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--excel-green-border);
-      background: var(--excel-green-light);
-      color: var(--excel-green-dark);
-      font-size: 0.78rem;
+    .btn-pay {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 0.84rem;
       font-weight: 700;
-      cursor: pointer;
-      transition: all 0.15s ease;
+      min-height: 40px;
       white-space: nowrap;
     }
 
-    .btn-pay-quick:hover {
-      background: var(--excel-green);
-      color: #ffffff;
-      border-color: var(--excel-green);
+    .btn-pay:active {
+      background: var(--primary-hover);
     }
 
-    .paid-check-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.79rem;
+    .btn-clear {
+      background: #eef2f6;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 11px;
+      font-size: 0.82rem;
       font-weight: 600;
-      color: var(--stato-pagato-text);
+      min-height: 40px;
     }
 
-    .data-table tfoot td {
-      background: var(--bg-excel-hdr);
-      font-weight: 800;
-      border-top: 2px solid var(--border-color);
-      padding: 12px 14px;
+    /* Mobile Card Layout for Table */
+    @media (max-width: 720px) {
+      .data-table thead {
+        display: none;
+      }
+      .data-table, .data-table tbody, .data-table tr, .data-table td {
+        display: block;
+        width: 100%;
+      }
+      .data-table tr {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .data-table td {
+        border: none;
+        padding: 5px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .data-table td::before {
+        content: attr(data-label);
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .data-table td.td-person {
+        display: block;
+        padding-bottom: 8px;
+      }
+      .data-table td.td-person::before {
+        display: none;
+      }
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 32px 16px;
-      color: var(--text-muted);
-    }
-
-    /* ==========================================================================
-       SEZIONE VOCI EXTRA E FORMULE EXCEL (RIGHE 18–27)
-       ========================================================================== */
-    .section-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 18px 20px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .section-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
+    /* Extra Formulas Section */
     .section-title {
-      margin: 0;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 1rem;
+      font-weight: 800;
+      margin: 0 0 10px;
+      color: var(--text);
     }
 
-    .formulas-grid {
+    .extra-grid {
       display: grid;
-      grid-template-columns: repeat(1, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 12px;
     }
 
-    @media (min-width: 640px) {
-      .formulas-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+    .extra-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
     }
 
-    @media (min-width: 1024px) {
-      .formulas-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
-
-    .formula-box {
-      background: var(--bg-subtle);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 13px 15px;
+    .extra-head {
       display: flex;
-      flex-direction: column;
       justify-content: space-between;
-      gap: 8px;
-    }
-
-    .formula-box.editable-box {
-      background: #f0fdf4;
-      border-color: var(--excel-green-border);
-    }
-
-    .formula-box-top {
-      display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      margin-bottom: 6px;
     }
 
-    .formula-label {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-    }
-
-    .formula-val {
-      font-size: 1.35rem;
-      font-weight: 800;
-      color: var(--excel-green-dark);
-    }
-
-    .formula-expr {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      padding: 4px 8px;
+    .extra-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.76rem;
+      background: #eef2f6;
+      padding: 2px 7px;
       border-radius: 5px;
-      word-break: break-all;
+      color: var(--muted);
+      font-weight: 700;
     }
 
-    .libro-editor {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .libro-step-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--excel-green-border);
-      background: #ffffff;
-      color: var(--excel-green-dark);
-      font-weight: 800;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    .libro-step-btn:hover {
-      background: var(--excel-green-light);
-    }
-
-    /* ==========================================================================
-       TAB 2: GRIGLIA EXCEL (FOGLIO1 — 27 RIGHE x 12 COLONNE A–L)
-       ========================================================================== */
+    /* Excel Grid Panel */
     .excel-toolbar {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-bottom: none;
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 12px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      box-shadow: var(--shadow);
     }
 
     .formula-bar {
       display: flex;
       align-items: center;
-      flex: 1 1 320px;
-      border: 1px solid var(--border-grid);
-      border-radius: var(--radius-sm);
-      background: #ffffff;
-      overflow: hidden;
-      min-height: 36px;
+      gap: 8px;
+      flex: 1;
+      min-width: 240px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
     }
 
     .fb-coord {
-      background: var(--bg-excel-hdr);
-      border-right: 1px solid var(--border-grid);
-      padding: 6px 12px;
-      font-weight: 700;
-      font-size: 0.84rem;
-      color: var(--text-primary);
-      min-width: 58px;
-      text-align: center;
+      font-weight: 800;
+      color: var(--primary);
+      min-width: 34px;
     }
 
-    .fb-fx {
-      padding: 6px 10px;
-      font-style: italic;
-      font-weight: 700;
-      color: var(--excel-green);
-      border-right: 1px solid #e2e8f0;
-      user-select: none;
-    }
-
-    .fb-content {
-      padding: 6px 12px;
-      font-size: 0.86rem;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .toggle-formulas-btn {
-      background: var(--excel-green-light);
-      color: var(--excel-green-dark);
-      border: 1px solid var(--excel-green-border);
-    }
-
-    .toggle-formulas-btn.active {
-      background: var(--excel-green);
-      color: #ffffff;
-      border-color: var(--excel-green);
-    }
-
-    .excel-sheet-wrapper {
-      background: #ffffff;
-      border: 1px solid var(--border-grid);
-      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    .excel-scroll {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       overflow-x: auto;
-      box-shadow: var(--shadow-sm);
+      -webkit-overflow-scrolling: touch;
+      box-shadow: var(--shadow);
     }
 
-    table.excel-grid {
+    .excel-table {
       border-collapse: collapse;
+      min-width: 900px;
       width: 100%;
-      min-width: 980px;
-      font-size: 0.83rem;
+      font-size: 0.84rem;
     }
 
-    .excel-grid th.col-hdr,
-    .excel-grid th.corner-hdr {
-      background: var(--bg-excel-hdr);
+    .excel-table th {
+      background: #e9edf3;
       color: #334155;
       font-weight: 700;
-      text-align: center;
-      border: 1px solid var(--border-grid);
+      border: 1px solid #cbd5e1;
       padding: 6px 8px;
-      user-select: none;
+      text-align: center;
       min-width: 72px;
     }
 
-    .excel-grid th.corner-hdr {
-      min-width: 42px;
-      width: 42px;
+    .excel-table th.row-num {
+      min-width: 38px;
+      width: 38px;
+      background: #e9edf3;
     }
 
-    .excel-grid td.row-hdr {
-      background: var(--bg-excel-hdr);
-      color: #334155;
-      font-weight: 700;
-      text-align: center;
-      border: 1px solid var(--border-grid);
-      padding: 5px 6px;
-      user-select: none;
-      width: 42px;
-    }
-
-    .excel-grid td.xl-cell {
-      border: 1px solid #d8e0e8;
-      padding: 5px 8px;
-      height: 29px;
+    .excel-table td {
+      border: 1px solid #e2e8f0;
+      padding: 6px 8px;
+      height: 32px;
       white-space: nowrap;
-      cursor: cell;
-      transition: background-color 0.08s;
+      cursor: pointer;
     }
 
-    .excel-grid td.xl-cell:hover {
-      background-color: #f1f8f4;
-    }
-
-    .excel-grid td.xl-cell.selected {
-      outline: 2px solid var(--excel-green);
+    .excel-table td.selected-cell {
+      outline: 2px solid var(--primary);
       outline-offset: -2px;
-      background-color: #eefaf3;
+      background: var(--primary-soft) !important;
     }
 
-    .excel-grid td.xl-header-row {
-      font-weight: 700;
-      background-color: #f8fafc;
-      color: #0f172a;
-      text-align: center;
-    }
+    .cell-num { text-align: right; font-variant-numeric: tabular-nums; }
+    .cell-formula { color: var(--blue); font-weight: 700; }
+    .cell-bold { font-weight: 700; background: #f8fafc; }
 
-    .excel-grid td.xl-num {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .excel-grid td.xl-formula {
-      background-color: #f3fbf6;
-      color: #0b5c30;
+    .toast {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #182230;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.88rem;
       font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 999;
     }
 
-    .excel-grid td.xl-formula-raw {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.77rem;
-      color: #065f46;
-      background-color: #ecfdf5;
-    }
-
-    .excel-grid td.xl-bold {
-      font-weight: 700;
-    }
-
-    .excel-grid td.xl-stato-DARE {
-      background-color: #fee2e2;
-      color: #991b1b;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .excel-grid td.xl-stato-DARA {
-      background-color: #fef3c7;
-      color: #92400e;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .excel-grid td.xl-stato-rit {
-      background-color: #e0e7ff;
-      color: #3730a3;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .sheet-tab-footer {
-      background: var(--bg-excel-hdr);
-      border-top: 1px solid var(--border-grid);
-      padding: 6px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-
-    .sheet-pill {
-      background: #ffffff;
-      color: var(--excel-green-dark);
-      font-weight: 700;
-      padding: 3px 12px;
-      border-radius: 4px 4px 0 0;
-      border: 1px solid var(--border-grid);
-      border-bottom: 2px solid var(--excel-green);
-    }
-
-    .footer-note {
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 24px;
+    .toast.show {
+      opacity: 1;
     }
   </style>
 </head>
 <body>
-  <!-- ========================================================================
-       BARRA SUPERIORE
-       ======================================================================== -->
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="brand">
-        <div class="brand-icon" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="3" y1="9" x2="21" y2="9"></line>
-            <line x1="3" y1="15" x2="21" y2="15"></line>
-            <line x1="9" y1="3" x2="9" y2="21"></line>
-            <line x1="15" y1="3" x2="15" y2="21"></line>
-          </svg>
-        </div>
-        <div>
-          <h1>Regalo Stef — Gestione Quote</h1>
-          <div class="brand-sub">
-            <span class="file-pill">regalstef.xlsx • Foglio1</span>
-            <span>Salvataggio locale automatico</span>
-          </div>
-        </div>
-      </div>
 
+  <header class="header">
+    <div class="header-inner">
+      <div>
+        <h1>Regalo Stef <span class="badge-file">regalstef.xlsx</span></h1>
+        <p class="header-sub">Riepilogo quote, stati pagamento e foglio Excel interattivo</p>
+      </div>
       <div class="header-actions">
-        <button type="button" id="btnExportCsv" class="btn btn-header-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Esporta CSV
-        </button>
-        <button type="button" id="btnResetAsk" class="btn btn-header-ghost">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="1 4 1 10 7 10"></polyline>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-          </svg>
-          Ripristina Dati Originali
-        </button>
+        <button type="button" class="btn-header" data-action="export-csv">Esporta CSV</button>
+        <button type="button" class="btn-header" data-action="reset-data">Ripristina Originali</button>
       </div>
     </div>
   </header>
 
-  <!-- Banner notifiche / conferma ripristino -->
-  <div id="toastBar" class="toast-bar" role="status" aria-live="polite"></div>
+  <main class="container">
+    <!-- KPI Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Totale Stima (F2)</div>
+        <div class="kpi-value" id="kpi-stima">365 €</div>
+        <div class="kpi-note">Formula =SUM(B2:B15)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Effettivo Raccolto</div>
+        <div class="kpi-value green" id="kpi-raccolto">90 €</div>
+        <div class="kpi-note" id="kpi-g2-note">Celle C2:C15 (G2 Excel: 275 €)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Sicuro Anticipo (B21)</div>
+        <div class="kpi-value blue" id="kpi-anticipo">180 €</div>
+        <div class="kpi-note">=C2+C3+B4+C6+B5+C9+B12+C14</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Da Raccogliere (B23)</div>
+        <div class="kpi-value amber" id="kpi-rimanente">185 €</div>
+        <div class="kpi-note" id="kpi-c23-note">C23 = 185 € (=F2-B21)</div>
+      </div>
+    </section>
 
-  <!-- ========================================================================
-       CONTENUTO PRINCIPALE
-       ======================================================================== -->
-  <main class="main-container">
-    <!-- Navigazione Schede -->
-    <nav class="tabs-bar" role="tablist" aria-label="Viste del foglio Excel">
-      <button type="button" role="tab" id="tabBtnInteractive" class="tab-btn active" aria-selected="true" aria-controls="panelInteractive">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="8" y1="6" x2="21" y2="6"></line>
-          <line x1="8" y1="12" x2="21" y2="12"></line>
-          <line x1="8" y1="18" x2="21" y2="18"></line>
-          <line x1="3" y1="6" x2="3.01" y2="6"></line>
-          <line x1="3" y1="12" x2="3.01" y2="12"></line>
-          <line x1="3" y1="18" x2="3.01" y2="18"></line>
-        </svg>
-        Riepilogo Interattivo
-      </button>
-      <button type="button" role="tab" id="tabBtnExcel" class="tab-btn" aria-selected="false" aria-controls="panelExcel">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-          <line x1="3" y1="9" x2="21" y2="9"></line>
-          <line x1="3" y1="15" x2="21" y2="15"></line>
-          <line x1="9" y1="3" x2="9" y2="21"></line>
-          <line x1="15" y1="3" x2="15" y2="21"></line>
-        </svg>
-        Griglia Excel (Foglio1)
-      </button>
+    <!-- Navigation Tabs -->
+    <nav class="tabs-bar" aria-label="Viste principali">
+      <button type="button" class="tab-btn active" data-action="switch-tab" data-tab="summary">Riepilogo Interattivo</button>
+      <button type="button" class="tab-btn" data-action="switch-tab" data-tab="grid">Griglia Excel (Foglio1)</button>
     </nav>
 
-    <!-- ======================================================================
-         SCHEDA 1: RIEPILOGO INTERATTIVO
-         ====================================================================== -->
-    <section id="panelInteractive" class="tab-panel active" role="tabpanel" aria-labelledby="tabBtnInteractive">
-      <!-- 4 Card KPI -->
-      <div class="kpi-grid">
-        <article class="kpi-card">
-          <div>
-            <div class="kpi-header">
-              <span class="kpi-title">Totale Stima</span>
-              <span class="cell-tag mono">F2</span>
-            </div>
-            <div id="kpiTotaleStima" class="kpi-value num">365 €</div>
-          </div>
-          <div class="kpi-sub mono">=SUM(B2:B15)</div>
-        </article>
-
-        <article class="kpi-card kpi-slate">
-          <div>
-            <div class="kpi-header">
-              <span class="kpi-title">Effettivo Raccolto</span>
-              <span class="cell-tag mono">C2:C15</span>
-            </div>
-            <div id="kpiEffettivoRaccolto" class="kpi-value num">90 €</div>
-          </div>
-          <div>
-            <div id="kpiG2Note" class="kpi-sub">Excel G2 = SUM(C2:C34) = 275 €</div>
-            <div class="progress-track" aria-hidden="true">
-              <div id="kpiProgressFill" class="progress-fill" style="width: 24.7%;"></div>
-            </div>
-          </div>
-        </article>
-
-        <article class="kpi-card">
-          <div>
-            <div class="kpi-header">
-              <span class="kpi-title">Sicuro Anticipo</span>
-              <span class="cell-tag mono">B21</span>
-            </div>
-            <div id="kpiSicuroAnticipo" class="kpi-value num">180 €</div>
-          </div>
-          <div class="kpi-sub mono">=C2+C3+B4+C6+C5+C9+C12+C14</div>
-        </article>
-
-        <article class="kpi-card kpi-amber">
-          <div>
-            <div class="kpi-header">
-              <span class="kpi-title">Rimanente da Raccogliere</span>
-              <span class="cell-tag mono">B23 / C23</span>
-            </div>
-            <div id="kpiRimanente" class="kpi-value num">185 €</div>
-          </div>
-          <div id="kpiRimanenteSub" class="kpi-sub">Diff. F2-B21: 185 € • DARE/DARÀ: 185 €</div>
-        </article>
-      </div>
-
-      <!-- Barra di Ricerca e Filtri Rapidi -->
-      <div class="controls-card">
-        <div class="search-box">
-          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input
-            type="text"
-            id="searchInput"
-            class="search-input"
-            placeholder="Cerca nome o membro gruppo (es. federico, valeria)..."
-            aria-label="Cerca partecipante"
-          />
-          <button type="button" id="searchClear" class="search-clear" title="Pulisci ricerca" aria-label="Pulisci ricerca">✕</button>
-        </div>
-
-        <div id="filterPills" class="filter-pills" role="group" aria-label="Filtra per stato">
-          <button type="button" class="filter-pill active" data-filter="ALL">Tutti (14)</button>
-          <button type="button" class="filter-pill" data-filter="Pagato">Pagati (5)</button>
-          <button type="button" class="filter-pill" data-filter="DARE">DARE (5)</button>
-          <button type="button" class="filter-pill" data-filter="DARA'">DARÀ (3)</button>
-          <button type="button" class="filter-pill" data-filter="rit">rit (1)</button>
+    <!-- PANEL 1: Riepilogo Interattivo -->
+    <section id="panel-summary" class="panel active">
+      <div class="toolbar">
+        <input type="search" id="search-box" class="search-input" placeholder="Cerca partecipante o membro gruppo (es. enza, federico, valeria)...">
+        <div class="filter-pills" id="filter-pills">
+          <button type="button" class="pill-btn active" data-action="set-filter" data-filter="ALL">Tutti (14)</button>
+          <button type="button" class="pill-btn" data-action="set-filter" data-filter="PAID">Pagati</button>
+          <button type="button" class="pill-btn" data-action="set-filter" data-filter="DARE">DARE</button>
+          <button type="button" class="pill-btn" data-action="set-filter" data-filter="DARA">DARÀ</button>
+          <button type="button" class="pill-btn" data-action="set-filter" data-filter="RIT">rit</button>
         </div>
       </div>
 
-      <!-- Tabella Interattiva Partecipanti (Righe 2–15) -->
-      <div class="table-card">
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="text-center" style="width: 60px;">Riga</th>
-                <th>Partecipante / Gruppo (Col. A / H–L)</th>
-                <th class="text-right">Stima (Col. B)</th>
-                <th class="text-right">Effettivo (Col. C)</th>
-                <th class="text-center">Stato (Col. D)</th>
-                <th class="text-center">Azione Rapida</th>
-              </tr>
-            </thead>
-            <tbody id="participantsTbody"></tbody>
-            <tfoot>
-              <tr>
-                <td colspan="2">Totale Righe Visualizzate (B2:B15 &amp; C2:C15)</td>
-                <td id="tfootStima" class="text-right num">365 €</td>
-                <td id="tfootEffettivo" class="text-right num">90 €</td>
-                <td colspan="2" id="tfootCount" style="font-weight: 600; font-size: 0.84rem; color: var(--text-secondary);">14 di 14 voci visualizzate</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+      <div class="card-box">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Partecipante / Gruppo</th>
+              <th>Stima (B)</th>
+              <th>Effettivo (C)</th>
+              <th>Stato (D)</th>
+              <th>Azione Rapida</th>
+            </tr>
+          </thead>
+          <tbody id="participants-tbody"></tbody>
+        </table>
       </div>
 
-      <!-- Voci Extra e Formule Excel (Righe 18–27) -->
-      <section class="section-card" aria-labelledby="extraFormulasTitle">
-        <div class="section-header">
-          <h2 id="extraFormulasTitle" class="section-title">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#107c41" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="4 17 10 11 4 5"></polyline>
-              <line x1="12" y1="19" x2="20" y2="19"></line>
-            </svg>
-            Voci Extra e Formule Excel (Righe 18–27)
-          </h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Modificando <strong>libro (B18)</strong> la quota di Attilio (<span class="mono">B4</span>) si aggiorna subito</span>
-        </div>
-
-        <div class="formulas-grid">
-          <!-- B18: libro -->
-          <div class="formula-box editable-box">
-            <div class="formula-box-top">
-              <span class="formula-label">libro</span>
-              <span class="cell-tag mono">A18:B18</span>
-            </div>
-            <div class="libro-editor">
-              <button type="button" id="btnLibroMinus" class="libro-step-btn" title="Riduci di 5 €" aria-label="Riduci quota libro">−</button>
-              <input type="number" id="inputLibro" class="effettivo-input num" min="0" step="1" value="20" aria-label="Importo libro B18" />
-              <span style="font-weight: 700;">€</span>
-              <button type="button" id="btnLibroPlus" class="libro-step-btn" title="Aumenta di 5 €" aria-label="Aumenta quota libro">+</button>
-            </div>
-            <div id="libroEffectHint" class="formula-expr">Attilio (B4): =60-B18+10 = 50 €</div>
+      <h2 class="section-title">Voci Extra e Formule del Foglio (Righe 18–27)</h2>
+      <div class="extra-grid">
+        <div class="extra-card">
+          <div class="extra-head">
+            <strong>libro (A18:B18)</strong>
+            <span class="extra-code">Influisce su Attilio (B4)</span>
           </div>
-
-          <!-- B21: SICURO ANTICIPO -->
-          <div class="formula-box">
-            <div class="formula-box-top">
-              <span class="formula-label">SICURO ANTICIPO</span>
-              <span class="cell-tag mono">A21:B21</span>
-            </div>
-            <div id="boxB21Val" class="formula-val num">180 €</div>
-            <div class="formula-expr mono">=C2+C3+B4+C6+C5+C9+C12+C14</div>
-          </div>
-
-          <!-- B23: Differenza F2 - B21 -->
-          <div class="formula-box">
-            <div class="formula-box-top">
-              <span class="formula-label">Differenza F2 - B21</span>
-              <span class="cell-tag mono">B23</span>
-            </div>
-            <div id="boxB23Val" class="formula-val num">185 €</div>
-            <div class="formula-expr mono">=F2-B21</div>
-          </div>
-
-          <!-- C23: Somma DARE/DARÀ -->
-          <div class="formula-box">
-            <div class="formula-box-top">
-              <span class="formula-label">Somma DARE/DARÀ</span>
-              <span class="cell-tag mono">C23</span>
-            </div>
-            <div id="boxC23Val" class="formula-val num">185 €</div>
-            <div class="formula-expr mono">=B10+B7+B8+B15+B11+B13</div>
-          </div>
-
-          <!-- G2: Totale Foglio -->
-          <div class="formula-box">
-            <div class="formula-box-top">
-              <span class="formula-label">Totale Foglio G2</span>
-              <span class="cell-tag mono">G2</span>
-            </div>
-            <div id="boxG2Val" class="formula-val num">275 €</div>
-            <div class="formula-expr mono">=SUM(C2:C34)</div>
-          </div>
-
-          <!-- B27: Calcolo B27 -->
-          <div class="formula-box">
-            <div class="formula-box-top">
-              <span class="formula-label">Calcolo B27</span>
-              <span class="cell-tag mono">B27</span>
-            </div>
-            <div id="boxB27Val" class="formula-val num">245 €</div>
-            <div class="formula-expr mono">=365-120</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+            <input type="number" id="input-libro" class="num-input" value="20" step="1">
+            <span style="font-size:0.84rem;color:var(--muted);">€ &rarr; Attilio: <strong id="attilio-calc-label">50 €</strong> (=60-B18+10)</span>
           </div>
         </div>
-      </section>
+
+        <div class="extra-card">
+          <div class="extra-head">
+            <strong>SICURO ANTICIPO</strong>
+            <span class="extra-code">A21:B21</span>
+          </div>
+          <div style="font-size:1.25rem;font-weight:800;color:var(--blue);" id="extra-b21">180 €</div>
+          <div class="formula-hint">=C2+C3+B4+C6+B5+C9+B12+C14</div>
+        </div>
+
+        <div class="extra-card">
+          <div class="extra-head">
+            <strong>Differenza / Residuo</strong>
+            <span class="extra-code">B23 &amp; C23</span>
+          </div>
+          <div style="font-size:1.25rem;font-weight:800;color:var(--amber);" id="extra-b23">185 € / 185 €</div>
+          <div class="formula-hint">B23 (=F2-B21) &bull; C23 (=B10+B7+B8+B15+B11+B13)</div>
+        </div>
+
+        <div class="extra-card">
+          <div class="extra-head">
+            <strong>Netto B27</strong>
+            <span class="extra-code">B27</span>
+          </div>
+          <div style="font-size:1.25rem;font-weight:800;" id="extra-b27">245 €</div>
+          <div class="formula-hint">=365-120 (oppure F2-120: <span id="extra-b27-dyn">245 €</span>)</div>
+        </div>
+      </div>
     </section>
 
-    <!-- ======================================================================
-         SCHEDA 2: GRIGLIA EXCEL (FOGLIO1 — 27 RIGHE x 12 COLONNE A–L)
-         ====================================================================== -->
-    <section id="panelExcel" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnExcel">
+    <!-- PANEL 2: Griglia Excel -->
+    <section id="panel-grid" class="panel">
       <div class="excel-toolbar">
-        <div class="formula-bar" aria-label="Barra della formula Excel">
-          <div id="fbCoord" class="fb-coord mono">B4</div>
-          <div class="fb-fx">fx</div>
-          <div id="fbContent" class="fb-content mono">B4: =60-B18+10 (Valore: 50)</div>
+        <div class="formula-bar">
+          <span class="fb-coord" id="fb-coord">F2</span>
+          <span id="fb-content">=SUM(B2:B15) &rarr; 365</span>
         </div>
-
-        <button type="button" id="btnToggleFormulas" class="btn toggle-formulas-btn" aria-pressed="false">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 18 22 12 16 6"></polyline>
-            <polyline points="8 6 2 12 8 18"></polyline>
-          </svg>
-          <span id="toggleFormulasLabel">Mostra Formule (=fx)</span>
-        </button>
+        <button type="button" class="pill-btn" id="btn-toggle-formulas" data-action="toggle-formulas">Mostra Formule (=fx)</button>
       </div>
-
-      <div class="excel-sheet-wrapper">
-        <table id="excelGridTable" class="excel-grid" aria-label="Replica Foglio1 di regalstef.xlsx"></table>
-        <div class="sheet-tab-footer">
-          <span class="sheet-pill">Foglio1</span>
-          <span>27 righe × 12 colonne (A–L) • Clicca su qualsiasi cella per leggere valore o formula</span>
-        </div>
+      <div class="excel-scroll">
+        <table class="excel-table" id="excel-grid-table"></table>
       </div>
     </section>
-
-    <p class="footer-note">
-      Replica web autonoma di <strong>regalstef.xlsx (Foglio1)</strong> • Compatibile con Chrome in locale e GitHub Pages.
-    </p>
   </main>
 
-  <!-- ========================================================================
-       LOGICA APPLICATIVA VANILLA JS
-       ======================================================================== -->
+  <div class="toast" id="toast"></div>
+
   <script>
     (function () {
       "use strict";
 
-      var STORAGE_KEY = "regalstef_xlsx_foglio1_v2";
+      var STORAGE_KEY = "regalstef_state_v3";
 
-      /**
-       * Dati originali esatti estratti da regalstef.xlsx (Foglio1, righe 2-15)
-       */
-      var DEFAULT_ENTRIES = [
-        {
-          row: 2,
-          name: "Mirco",
-          stimaBase: 20,
-          stimaFormula: null,
-          effettivo: 20,
-          stato: "Pagato",
-          excelD: "",
-          groupCols: []
-        },
-        {
-          row: 3,
-          name: "Cri",
-          stimaBase: 20,
-          stimaFormula: null,
-          effettivo: 20,
-          stato: "Pagato",
-          excelD: "",
-          groupCols: []
-        },
-        {
-          row: 4,
-          name: "attilio",
-          stimaBase: 50,
-          stimaFormula: "=60-B18+10",
-          effettivo: null,
-          stato: "rit",
-          excelD: "rit",
-          groupCols: ["federico", "matteo", "rosamaria", "alessandra", "enrico"]
-        },
-        {
-          row: 5,
-          name: "andrea",
-          stimaBase: 20,
-          stimaFormula: null,
-          effettivo: null,
-          stato: "DARE",
-          excelD: "DARE",
-          groupCols: []
-        },
-        {
-          row: 6,
-          name: "marcolino",
-          stimaBase: 20,
-          stimaFormula: null,
-          effettivo: 20,
-          stato: "Pagato",
-          excelD: "",
-          groupCols: []
-        },
-        {
-          row: 7,
-          name: "luca M",
-          stimaBase: 20,
-          stimaFormula: null,
-          effettivo: null,
-          stato: "DARE",
-          excelD: "DARE",
-          groupCols: []
-        },
-        {
-          row: 8,
-          name: "pizz",
-          stimaBase: 20,
-          stimaFormula: null,
-          effettivo: null,
-          stato: "DARE",
-          excelD: "DARE",
-          groupCols: []
-        },
-        {
-          row: 9,
-          name: "elio",
-          stimaBase: 20,
-          stimaFormula: null,
-          effettivo: 20,
-          stato: "Pagato",
-          excelD: "",
-          groupCols: []
-        },
-        {
-          row: 10,
-          name: "enza",
-          stimaBase: 115,
-          stimaFormula: "=120-5",
-          effettivo: null,
-          stato: "DARA'",
-          excelD: "DARA'",
-          groupCols: ["valeria", "claudio", "felicia", "angela", "marta"]
-        },
-        {
-          row: 11,
-          name: "mario",
-          stimaBase: 10,
-          stimaFormula: null,
-          effettivo: null,
-          stato: "DARA'",
-          excelD: "DARA'",
-          groupCols: []
-        },
-        {
-          row: 12,
-          name: "robi",
-          stimaBase: 20,
-          stimaFormula: null,
-          effettivo: null,
-          stato: "DARE",
-          excelD: "DARE",
-          groupCols: []
-        },
-        {
-          row: 13,
-          name: "silvia",
-          stimaBase: 10,
-          stimaFormula: null,
-          effettivo: null,
-          stato: "DARA'",
-          excelD: "DARA'",
-          groupCols: []
-        },
-        {
-          row: 14,
-          name: "daniele",
-          stimaBase: 10,
-          stimaFormula: null,
-          effettivo: 10,
-          stato: "Pagato",
-          excelD: "",
-          groupCols: []
-        },
-        {
-          row: 15,
-          name: "melanie",
-          stimaBase: 10,
-          stimaFormula: null,
-          effettivo: null,
-          stato: "DARE",
-          excelD: "DARE",
-          groupCols: []
-        }
-      ];
+      var DEFAULT_PARTICIPANTS = [{"row": 2, "name": "Mirco", "stimaBase": 20, "stimaFormula": null, "effettivo": 20, "stato": "", "membri": []}, {"row": 3, "name": "Cri", "stimaBase": 20, "stimaFormula": null, "effettivo": 20, "stato": "", "membri": []}, {"row": 4, "name": "attilio", "stimaBase": null, "stimaFormula": "=60-B18+10", "effettivo": null, "stato": "rit", "membri": ["federico", "matteo", "rosamaria", "alessandra", "enrico"]}, {"row": 5, "name": "andrea", "stimaBase": 20, "stimaFormula": null, "effettivo": null, "stato": "DARE", "membri": []}, {"row": 6, "name": "marcolino", "stimaBase": 20, "stimaFormula": null, "effettivo": 20, "stato": "", "membri": []}, {"row": 7, "name": "luca M", "stimaBase": 20, "stimaFormula": null, "effettivo": null, "stato": "DARE", "membri": []}, {"row": 8, "name": "pizz", "stimaBase": 20, "stimaFormula": null, "effettivo": null, "stato": "DARE", "membri": []}, {"row": 9, "name": "elio", "stimaBase": 20, "stimaFormula": null, "effettivo": 20, "stato": "", "membri": []}, {"row": 10, "name": "enza", "stimaBase": 115, "stimaFormula": "=120-5", "effettivo": null, "stato": "DARA'", "membri": ["valeria", "claudio", "felicia", "angela", "marta"]}, {"row": 11, "name": "mario", "stimaBase": 10, "stimaFormula": null, "effettivo": null, "stato": "DARA'", "membri": []}, {"row": 12, "name": "robi", "stimaBase": 20, "stimaFormula": null, "effettivo": null, "stato": "DARE", "membri": []}, {"row": 13, "name": "silvia", "stimaBase": 10, "stimaFormula": null, "effettivo": null, "stato": "DARA'", "membri": []}, {"row": 14, "name": "daniele", "stimaBase": 10, "stimaFormula": null, "effettivo": 10, "stato": "", "membri": []}, {"row": 15, "name": "melanie", "stimaBase": 10, "stimaFormula": null, "effettivo": null, "stato": "DARE", "membri": []}];
 
-      var state = null;
-      var searchQuery = "";
-      var statusFilter = "ALL";
-      var showRawFormulas = false;
-      var selectedExcelCell = "B4";
-      var toastTimeout = null;
-
-      function getFreshDefaultState() {
+      function cloneDefaults() {
         return {
-          libro: 20,
-          entries: DEFAULT_ENTRIES.map(function (e) {
-            return {
-              row: e.row,
-              name: e.name,
-              stimaBase: e.stimaBase,
-              stimaFormula: e.stimaFormula,
-              effettivo: e.effettivo,
-              stato: e.stato,
-              excelD: e.excelD,
-              groupCols: e.groupCols.slice()
-            };
-          })
+          participants: JSON.parse(JSON.stringify(DEFAULT_PARTICIPANTS)),
+          libro: 20
         };
       }
 
@@ -1559,43 +731,95 @@
           var raw = window.localStorage.getItem(STORAGE_KEY);
           if (raw) {
             var parsed = JSON.parse(raw);
-            if (parsed && Array.isArray(parsed.entries) && parsed.entries.length === 14) {
-              return {
-                libro: typeof parsed.libro === "number" && !isNaN(parsed.libro) ? parsed.libro : 20,
-                entries: parsed.entries.map(function (item, idx) {
-                  var def = DEFAULT_ENTRIES[idx];
-                  var validStates = ["Pagato", "DARE", "DARA'", "rit"];
-                  var st = validStates.indexOf(item.stato) !== -1 ? item.stato : def.stato;
-                  var eff =
-                    item.effettivo === "" || item.effettivo === null || isNaN(Number(item.effettivo))
-                      ? null
-                      : Number(item.effettivo);
-                  return {
-                    row: def.row,
-                    name: def.name,
-                    stimaBase: def.stimaBase,
-                    stimaFormula: def.stimaFormula,
-                    effettivo: eff,
-                    stato: st,
-                    excelD: st === "Pagato" ? "" : st,
-                    groupCols: def.groupCols.slice()
-                  };
-                })
-              };
+            if (parsed && Array.isArray(parsed.participants) && parsed.participants.length === 14) {
+              return parsed;
             }
           }
-        } catch (e) {
-          /* Ignora errori di accesso a localStorage in modalità file:// o incognito */
-        }
-        return getFreshDefaultState();
+        } catch (e) {}
+        return cloneDefaults();
       }
 
       function saveState() {
         try {
           window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        } catch (e) {
-          /* Ignora errori di scrittura su localStorage */
+        } catch (e) {}
+      }
+
+      var state = loadState();
+      var currentTab = "summary";
+      var currentFilter = "ALL";
+      var searchQuery = "";
+      var showFormulas = false;
+      var selectedCoord = "F2";
+
+      function showToast(msg) {
+        var el = document.getElementById("toast");
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add("show");
+        window.clearTimeout(showToast._timer);
+        showToast._timer = window.setTimeout(function () {
+          el.classList.remove("show");
+        }, 2000);
+      }
+
+      function getStima(p) {
+        if (p.row === 4) {
+          return 60 - (Number(state.libro) || 0) + 10;
         }
+        return Number(p.stimaBase) || 0;
+      }
+
+      function getRowByNum(r) {
+        for (var i = 0; i < state.participants.length; i++) {
+          if (state.participants[i].row === r) return state.participants[i];
+        }
+        return null;
+      }
+
+      function valCOrZero(r) {
+        var p = getRowByNum(r);
+        return p && p.effettivo !== null && p.effettivo !== "" ? Number(p.effettivo) || 0 : 0;
+      }
+
+      function valB(r) {
+        var p = getRowByNum(r);
+        return p ? getStima(p) : 0;
+      }
+
+      function computeMetrics() {
+        var f2 = 0;
+        var sumEffReal = 0;
+        for (var i = 0; i < state.participants.length; i++) {
+          var p = state.participants[i];
+          f2 += getStima(p);
+          if (p.effettivo !== null && p.effettivo !== "") {
+            sumEffReal += Number(p.effettivo) || 0;
+          }
+        }
+
+        // B21: =C2+C3+B4+C6+B5+C9+B12+C14
+        var b21 = valCOrZero(2) + valCOrZero(3) + valB(4) + valCOrZero(6) + valB(5) + valCOrZero(9) + valB(12) + valCOrZero(14);
+        // B23: =F2-B21
+        var b23 = f2 - b21;
+        // C23: =B10+B7+B8+B15+B11+B13
+        var c23 = valB(10) + valB(7) + valB(8) + valB(15) + valB(11) + valB(13);
+        // G2: =SUM(C2:C34)
+        var g2 = sumEffReal + c23;
+        // B27: =365-120
+        var b27 = 365 - 120;
+        var b27Dyn = f2 - 120;
+
+        return {
+          f2: f2,
+          sumEffReal: sumEffReal,
+          b21: b21,
+          b23: b23,
+          c23: c23,
+          g2: g2,
+          b27: b27,
+          b27Dyn: b27Dyn
+        };
       }
 
       function escapeHtml(str) {
@@ -1606,766 +830,381 @@
           .replace(/"/g, "&quot;");
       }
 
-      function formatEuro(val) {
-        if (val === null || val === undefined || isNaN(val)) return "";
-        var rounded = Math.round(val * 100) / 100;
-        if (Math.floor(rounded) === rounded) {
-          return rounded + " €";
+      function updateCalculationsOnly() {
+        var m = computeMetrics();
+        document.getElementById("kpi-stima").textContent = m.f2 + " €";
+        document.getElementById("kpi-raccolto").textContent = m.sumEffReal + " €";
+        document.getElementById("kpi-g2-note").textContent = "Celle C2:C15 (G2 Excel: " + m.g2 + " €)";
+        document.getElementById("kpi-anticipo").textContent = m.b21 + " €";
+        document.getElementById("kpi-rimanente").textContent = m.b23 + " €";
+        document.getElementById("kpi-c23-note").textContent = "C23 = " + m.c23 + " € (=F2-B21)";
+
+        document.getElementById("attilio-calc-label").textContent = valB(4) + " €";
+        document.getElementById("extra-b21").textContent = m.b21 + " €";
+        document.getElementById("extra-b23").textContent = m.b23 + " € / " + m.c23 + " €";
+        document.getElementById("extra-b27").textContent = m.b27 + " €";
+        document.getElementById("extra-b27-dyn").textContent = m.b27Dyn + " €";
+
+        var attilioStimaEl = document.getElementById("stima-val-4");
+        if (attilioStimaEl) {
+          attilioStimaEl.textContent = valB(4) + " €";
         }
-        return rounded.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+        updateFilterCounts();
+        if (currentTab === "grid") {
+          renderExcelGrid();
+        }
       }
 
-      /**
-       * Calcola tutte le stime e le formule di Foglio1
-       */
-      function computeWorkbook() {
-        var byRow = {};
-        state.entries.forEach(function (entry) {
-          var stima = entry.stimaBase;
-          if (entry.row === 4) {
-            stima = 60 - state.libro + 10;
-          } else if (entry.row === 10) {
-            stima = 120 - 5;
+      function updateFilterCounts() {
+        var total = state.participants.length;
+        var paid = 0, dare = 0, dara = 0, rit = 0;
+        for (var i = 0; i < state.participants.length; i++) {
+          var p = state.participants[i];
+          var isPaid = p.effettivo !== null && p.effettivo !== "" && Number(p.effettivo) > 0;
+          if (isPaid) paid++;
+          if (p.stato === "DARE") dare++;
+          if (p.stato === "DARA'") dara++;
+          if (p.stato === "rit") rit++;
+        }
+        var pills = document.querySelectorAll("#filter-pills .pill-btn");
+        for (var j = 0; j < pills.length; j++) {
+          var f = pills[j].getAttribute("data-filter");
+          if (f === "ALL") pills[j].textContent = "Tutti (" + total + ")";
+          if (f === "PAID") pills[j].textContent = "Pagati (" + paid + ")";
+          if (f === "DARE") pills[j].textContent = "DARE (" + dare + ")";
+          if (f === "DARA") pills[j].textContent = "DARÀ (" + dara + ")";
+          if (f === "RIT") pills[j].textContent = "rit (" + rit + ")";
+          if (f === currentFilter) {
+            pills[j].classList.add("active");
+          } else {
+            pills[j].classList.remove("active");
           }
-          byRow[entry.row] = {
-            entry: entry,
-            stimaComputed: stima,
-            effettivoNum: entry.effettivo !== null ? entry.effettivo : 0
-          };
-        });
+        }
+      }
 
-        // F2 = SUM(B2:B15) -> 365
-        var F2 = 0;
-        var sumC2C15 = 0;
-        state.entries.forEach(function (entry) {
-          F2 += byRow[entry.row].stimaComputed;
-          sumC2C15 += byRow[entry.row].effettivoNum;
-        });
+      function matchesFilter(p) {
+        var isPaid = p.effettivo !== null && p.effettivo !== "" && Number(p.effettivo) > 0;
+        if (currentFilter === "PAID" && !isPaid) return false;
+        if (currentFilter === "DARE" && p.stato !== "DARE") return false;
+        if (currentFilter === "DARA" && p.stato !== "DARA'") return false;
+        if (currentFilter === "RIT" && p.stato !== "rit") return false;
 
-        // B21 = C2+C3+B4+C6+C5+C9+C12+C14 -> 180
-        var c5Val = byRow[5].entry.effettivo !== null ? byRow[5].effettivoNum : byRow[5].stimaComputed;
-        var c12Val = byRow[12].entry.effettivo !== null ? byRow[12].effettivoNum : byRow[12].stimaComputed;
-        var B21 =
-          byRow[2].effettivoNum +
-          byRow[3].effettivoNum +
-          byRow[4].stimaComputed +
-          byRow[6].effettivoNum +
-          c5Val +
-          byRow[9].effettivoNum +
-          c12Val +
-          byRow[14].effettivoNum;
-
-        // B23 = F2 - B21 -> 185
-        var B23 = F2 - B21;
-
-        // C23 = B10+B7+B8+B15+B11+B13 -> 185
-        var c23Rows = [10, 7, 8, 15, 11, 13];
-        var C23 = 0;
-        c23Rows.forEach(function (rNum) {
-          var item = byRow[rNum];
-          if (item.entry.stato !== "Pagato") {
-            C23 += Math.max(0, item.stimaComputed - item.effettivoNum);
+        if (searchQuery) {
+          var q = searchQuery.toLowerCase();
+          var inName = p.name.toLowerCase().indexOf(q) !== -1;
+          var inMembers = false;
+          for (var i = 0; i < p.membri.length; i++) {
+            if (p.membri[i].toLowerCase().indexOf(q) !== -1) {
+              inMembers = true;
+              break;
+            }
           }
-        });
-
-        // G2 = SUM(C2:C34) -> 90 + 185 = 275
-        var G2 = sumC2C15 + C23;
-
-        // B27 = 365 - 120 -> 245
-        var B27 = 365 - 120;
-
-        return {
-          byRow: byRow,
-          F2: F2,
-          sumC2C15: sumC2C15,
-          B21: B21,
-          B23: B23,
-          C23: C23,
-          G2: G2,
-          B27: B27
-        };
+          if (!inName && !inMembers) return false;
+        }
+        return true;
       }
 
-      function showToast(htmlContent, isWarning, autoHideMs) {
-        var bar = document.getElementById("toastBar");
-        if (!bar) return;
-        if (toastTimeout) {
-          clearTimeout(toastTimeout);
-          toastTimeout = null;
-        }
-        bar.innerHTML =
-          "<div class=\"toast-content " + (isWarning ? "warning" : "") + "\">" + htmlContent + "</div>";
-        bar.classList.add("visible");
-
-        if (autoHideMs && autoHideMs > 0) {
-          toastTimeout = setTimeout(function () {
-            bar.classList.remove("visible");
-          }, autoHideMs);
-        }
-      }
-
-      function hideToast() {
-        var bar = document.getElementById("toastBar");
-        if (bar) {
-          bar.classList.remove("visible");
-        }
-      }
-
-      function getStatoCssClass(stato) {
-        if (stato === "Pagato") return "stato-Pagato";
-        if (stato === "DARE") return "stato-DARE";
-        if (stato === "DARA'") return "stato-DARA";
-        if (stato === "rit") return "stato-rit";
+      function getStatusClass(stato, isPaid) {
+        if (stato === "DARE") return "st-dare";
+        if (stato === "DARA'") return "st-dara";
+        if (stato === "rit") return "st-rit";
+        if (isPaid) return "st-paid";
         return "";
       }
 
-      function updateSummaryIndicators(calc) {
-        document.getElementById("kpiTotaleStima").textContent = formatEuro(calc.F2);
-        document.getElementById("kpiEffettivoRaccolto").textContent = formatEuro(calc.sumC2C15);
-        document.getElementById("kpiG2Note").textContent = "Excel G2 = SUM(C2:C34) = " + formatEuro(calc.G2);
+      function renderTable() {
+        var tbody = document.getElementById("participants-tbody");
+        var html = "";
+        var visibleCount = 0;
 
-        var pct = calc.F2 > 0 ? Math.min(100, Math.max(0, (calc.sumC2C15 / calc.F2) * 100)) : 0;
-        document.getElementById("kpiProgressFill").style.width = pct.toFixed(1) + "%";
+        for (var i = 0; i < state.participants.length; i++) {
+          var p = state.participants[i];
+          if (!matchesFilter(p)) continue;
+          visibleCount++;
 
-        document.getElementById("kpiSicuroAnticipo").textContent = formatEuro(calc.B21);
-        document.getElementById("kpiRimanente").textContent = formatEuro(calc.B23);
-        document.getElementById("kpiRimanenteSub").textContent =
-          "Diff. F2-B21: " + formatEuro(calc.B23) + " • DARE/DARÀ: " + formatEuro(calc.C23);
+          var stima = getStima(p);
+          var isPaid = p.effettivo !== null && p.effettivo !== "" && Number(p.effettivo) > 0;
+          var effVal = (p.effettivo !== null && p.effettivo !== "") ? p.effettivo : "";
+          var stClass = getStatusClass(p.stato, isPaid);
 
-        document.getElementById("libroEffectHint").textContent =
-          "Attilio (B4): =60-B18+10 = " + formatEuro(calc.byRow[4].stimaComputed);
-        document.getElementById("boxB21Val").textContent = formatEuro(calc.B21);
-        document.getElementById("boxB23Val").textContent = formatEuro(calc.B23);
-        document.getElementById("boxC23Val").textContent = formatEuro(calc.C23);
-        document.getElementById("boxG2Val").textContent = formatEuro(calc.G2);
-        document.getElementById("boxB27Val").textContent = formatEuro(calc.B27);
-      }
-
-      function renderAll() {
-        var calc = computeWorkbook();
-        updateSummaryIndicators(calc);
-
-        // Aggiorna conteggi sui pulsanti filtro
-        var counts = {
-          ALL: state.entries.length,
-          Pagato: 0,
-          DARE: 0,
-          "DARA'": 0,
-          rit: 0
-        };
-        state.entries.forEach(function (e) {
-          if (counts[e.stato] !== undefined) {
-            counts[e.stato] += 1;
-          }
-        });
-
-        var labelMap = {
-          ALL: "Tutti",
-          Pagato: "Pagati",
-          DARE: "DARE",
-          "DARA'": "DARÀ",
-          rit: "rit"
-        };
-
-        var pills = document.querySelectorAll("#filterPills .filter-pill");
-        pills.forEach(function (btn) {
-          var f = btn.getAttribute("data-filter");
-          btn.textContent = labelMap[f] + " (" + counts[f] + ")";
-          btn.classList.toggle("active", statusFilter === f);
-        });
-
-        // Aggiorna input libro B18
-        var inputLibro = document.getElementById("inputLibro");
-        if (document.activeElement !== inputLibro) {
-          inputLibro.value = state.libro;
-        }
-
-        renderParticipantsTable(calc);
-        renderExcelGrid(calc);
-      }
-
-      function renderParticipantsTable(calc) {
-        var tbody = document.getElementById("participantsTbody");
-        var q = searchQuery.trim().toLowerCase();
-
-        var filtered = state.entries.filter(function (entry) {
-          if (statusFilter !== "ALL" && entry.stato !== statusFilter) {
-            return false;
-          }
-          if (!q) return true;
-          var matchMain = entry.name.toLowerCase().indexOf(q) !== -1;
-          var matchSub = entry.groupCols.some(function (m) {
-            return m.toLowerCase().indexOf(q) !== -1;
-          });
-          return matchMain || matchSub;
-        });
-
-        if (filtered.length === 0) {
-          tbody.innerHTML =
-            "<tr><td colspan=\"6\" class=\"empty-state\">Nessun partecipante trovato con i filtri selezionati.</td></tr>";
-          document.getElementById("tfootStima").textContent = "0 €";
-          document.getElementById("tfootEffettivo").textContent = "0 €";
-          document.getElementById("tfootCount").textContent = "0 di " + state.entries.length + " voci visualizzate";
-          return;
-        }
-
-        var filteredStima = 0;
-        var filteredEff = 0;
-
-        var rowsHtml = filtered
-          .map(function (entry) {
-            var rowCalc = calc.byRow[entry.row];
-            filteredStima += rowCalc.stimaComputed;
-            filteredEff += rowCalc.effettivoNum;
-
-            var isGroup = entry.groupCols.length > 0;
-            var subHtml = "";
-            if (isGroup) {
-              var chips = entry.groupCols
-                .map(function (member) {
-                  var isMatch = q && member.toLowerCase().indexOf(q) !== -1;
-                  return (
-                    "<span class=\"submember-chip " +
-                    (isMatch ? "highlight" : "") +
-                    "\">" +
-                    escapeHtml(member) +
-                    "</span>"
-                  );
-                })
-                .join("");
-              subHtml = "<div class=\"submembers-list\">" + chips + "</div>";
+          var membersHtml = "";
+          if (p.membri && p.membri.length > 0) {
+            membersHtml = '<div class="group-tags">';
+            for (var mIdx = 0; mIdx < p.membri.length; mIdx++) {
+              membersHtml += '<span class="member-tag">' + escapeHtml(p.membri[mIdx]) + '</span>';
             }
+            membersHtml += '</div>';
+          }
 
-            var formulaHtml = entry.stimaFormula
-              ? "<div><span class=\"formula-hint mono\">" + escapeHtml(entry.stimaFormula) + "</span></div>"
-              : "";
+          var formulaHtml = p.stimaFormula ? '<span class="formula-hint">' + escapeHtml(p.stimaFormula) + '</span>' : '';
 
-            var effValueAttr = entry.effettivo !== null ? String(entry.effettivo) : "";
+          var actionBtn = isPaid
+            ? '<button type="button" class="btn-clear" data-action="clear-row" data-row="' + p.row + '">Azzera</button>'
+            : '<button type="button" class="btn-pay" data-action="pay-row" data-row="' + p.row + '">Segna Pagato (' + stima + ' €)</button>';
 
-            var actionHtml =
-              entry.stato === "Pagato"
-                ? "<span class=\"paid-check-label\">✓ Saldato</span>"
-                : "<button type=\"button\" class=\"btn-pay-quick\" data-pay-row=\"" +
-                  entry.row +
-                  "\">Segna Pagato</button>";
-
-            return (
-              "<tr class=\"" +
-              (isGroup ? "row-group" : "") +
-              "\">" +
-              "<td class=\"text-center\"><span class=\"row-idx mono\">" +
-              entry.row +
-              "</span></td>" +
-              "<td>" +
-              "<div class=\"person-name\">" +
-              "<span>" +
-              escapeHtml(entry.name) +
-              "</span>" +
-              (isGroup ? "<span class=\"group-badge\">Gruppo H" + entry.row + ":L" + entry.row + "</span>" : "") +
-              "</div>" +
-              subHtml +
-              "</td>" +
-              "<td class=\"text-right\">" +
-              "<div class=\"stima-amount num\">" +
-              formatEuro(rowCalc.stimaComputed) +
-              "</div>" +
+          html += '<tr class="' + (isPaid ? 'row-paid' : '') + '">' +
+            '<td class="td-person">' +
+              '<div class="person-name">' + escapeHtml(p.name) + ' <span class="row-coord">Riga ' + p.row + '</span></div>' +
+              membersHtml +
+            '</td>' +
+            '<td data-label="Stima (B' + p.row + ')">' +
+              '<strong id="stima-val-' + p.row + '">' + stima + ' €</strong>' +
               formulaHtml +
-              "</td>" +
-              "<td class=\"text-right\">" +
-              "<div class=\"effettivo-wrap\">" +
-              "<input type=\"number\" class=\"effettivo-input num\" data-row=\"" +
-              entry.row +
-              "\" min=\"0\" step=\"1\" placeholder=\"—\" value=\"" +
-              effValueAttr +
-              "\" aria-label=\"Effettivo raccolto per " +
-              escapeHtml(entry.name) +
-              "\" />" +
-              "<span style=\"color: var(--text-muted); font-size: 0.85rem;\">€</span>" +
-              "</div>" +
-              "</td>" +
-              "<td class=\"text-center\">" +
-              "<select class=\"stato-select " +
-              getStatoCssClass(entry.stato) +
-              "\" data-row=\"" +
-              entry.row +
-              "\" aria-label=\"Stato quota per " +
-              escapeHtml(entry.name) +
-              "\">" +
-              "<option value=\"Pagato\"" +
-              (entry.stato === "Pagato" ? " selected" : "") +
-              ">Pagato</option>" +
-              "<option value=\"DARE\"" +
-              (entry.stato === "DARE" ? " selected" : "") +
-              ">DARE</option>" +
-              "<option value=\"DARA'\"" +
-              (entry.stato === "DARA'" ? " selected" : "") +
-              ">DARÀ</option>" +
-              "<option value=\"rit\"" +
-              (entry.stato === "rit" ? " selected" : "") +
-              ">rit</option>" +
-              "</select>" +
-              "</td>" +
-              "<td class=\"text-center\">" +
-              actionHtml +
-              "</td>" +
-              "</tr>"
-            );
-          })
-          .join("");
-
-        tbody.innerHTML = rowsHtml;
-
-        document.getElementById("tfootStima").textContent = formatEuro(filteredStima);
-        document.getElementById("tfootEffettivo").textContent = formatEuro(filteredEff);
-        document.getElementById("tfootCount").textContent =
-          filtered.length + " di " + state.entries.length + " voci visualizzate";
-      }
-
-      /**
-       * Costruisce la matrice esatta 27 righe x 12 colonne (A..L) di Foglio1
-       */
-      function buildExcelMatrix(calc) {
-        var COLS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
-        var TOTAL_ROWS = 27;
-        var cells = {};
-
-        function setCell(coord, obj) {
-          cells[coord] = obj;
+            '</td>' +
+            '<td data-label="Effettivo (C' + p.row + ')">' +
+              '<input type="number" class="num-input" data-action="edit-eff" data-row="' + p.row + '" value="' + escapeHtml(effVal) + '" placeholder="—" step="1">' +
+            '</td>' +
+            '<td data-label="Stato (D' + p.row + ')">' +
+              '<select class="status-select ' + stClass + '" data-action="edit-stato" data-row="' + p.row + '">' +
+                '<option value=""' + (p.stato === "" ? " selected" : "") + '>' + (isPaid ? "Pagato" : "—") + '</option>' +
+                '<option value="DARE"' + (p.stato === "DARE" ? " selected" : "") + '>DARE</option>' +
+                '<option value="DARA'"' + (p.stato === "DARA'" ? " selected" : "") + '>DARÀ (DARA')</option>' +
+                '<option value="rit"' + (p.stato === "rit" ? " selected" : "") + '>rit</option>' +
+              '</select>' +
+            '</td>' +
+            '<td data-label="Azione">' + actionBtn + '</td>' +
+          '</tr>';
         }
 
-        // Intestazioni esatte di Foglio1: B1="stima", C1="effettivo", F1="stima", G1="effettivo"
-        setCell("B1", { value: "stima", isHeader: true });
-        setCell("C1", { value: "effettivo", isHeader: true });
-        setCell("F1", { value: "stima", isHeader: true });
-        setCell("G1", { value: "effettivo", isHeader: true });
+        if (visibleCount === 0) {
+          html = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted);">Nessun partecipante trovato con i filtri attuali.</td></tr>';
+        }
 
-        // Totali in E2:G2
-        setCell("E2", { value: "tot", bold: true });
-        setCell("F2", {
-          value: calc.F2,
-          formula: "=SUM(B2:B15)",
-          isNum: true,
-          bold: true
-        });
-        setCell("G2", {
-          value: calc.G2,
-          formula: "=SUM(C2:C34)",
-          isNum: true,
-          bold: true
-        });
-
-        // Righe 2-15: Elenco partecipanti
-        state.entries.forEach(function (entry) {
-          var r = entry.row;
-          var rowCalc = calc.byRow[r];
-
-          setCell("A" + r, { value: entry.name });
-          setCell("B" + r, {
-            value: rowCalc.stimaComputed,
-            formula: entry.stimaFormula,
-            isNum: true
-          });
-
-          if (entry.effettivo !== null) {
-            setCell("C" + r, {
-              value: entry.effettivo,
-              isNum: true
-            });
-          }
-
-          // Colonna D: in Foglio1 i pagati hanno D vuoto (""), gli altri hanno DARE / DARA' / rit
-          var colDVal = entry.stato === "Pagato" ? "" : entry.stato;
-          if (colDVal !== "") {
-            setCell("D" + r, {
-              value: colDVal,
-              stato: colDVal
-            });
-          }
-
-          // Gruppi in H4:L4 e H10:L10 (indici colonne 7..11 -> H, I, J, K, L)
-          entry.groupCols.forEach(function (member, idx) {
-            var colLetter = COLS[7 + idx];
-            if (colLetter) {
-              setCell(colLetter + r, { value: member });
-            }
-          });
-        });
-
-        // Riga 18: A18="libro", B18=20
-        setCell("A18", { value: "libro", bold: true });
-        setCell("B18", { value: state.libro, isNum: true, bold: true });
-
-        // Riga 21: A21="SICURO ANTICIPO", B21="=C2+C3+B4+C6+C5+C9+C12+C14"
-        setCell("A21", { value: "SICURO ANTICIPO", bold: true });
-        setCell("B21", {
-          value: calc.B21,
-          formula: "=C2+C3+B4+C6+C5+C9+C12+C14",
-          isNum: true,
-          bold: true
-        });
-
-        // Riga 23: B23="=F2-B21", C23="=B10+B7+B8+B15+B11+B13"
-        setCell("B23", {
-          value: calc.B23,
-          formula: "=F2-B21",
-          isNum: true,
-          bold: true
-        });
-        setCell("C23", {
-          value: calc.C23,
-          formula: "=B10+B7+B8+B15+B11+B13",
-          isNum: true,
-          bold: true
-        });
-
-        // Riga 27: B27="=365-120"
-        setCell("B27", {
-          value: calc.B27,
-          formula: "=365-120",
-          isNum: true,
-          bold: true
-        });
-
-        return { COLS: COLS, TOTAL_ROWS: TOTAL_ROWS, cells: cells };
+        tbody.innerHTML = html;
+        updateCalculationsOnly();
       }
 
-      function renderExcelGrid(calc) {
-        var table = document.getElementById("excelGridTable");
-        var matrix = buildExcelMatrix(calc);
-        var COLS = matrix.COLS;
-        var TOTAL_ROWS = matrix.TOTAL_ROWS;
-        var cells = matrix.cells;
+      function buildExcelCellsMap() {
+        var m = computeMetrics();
+        var map = {
+          "B1": { val: "stima", raw: "stima", bold: true },
+          "C1": { val: "effettivo", raw: "effettivo", bold: true },
+          "F1": { val: "stima", raw: "stima", bold: true },
+          "G1": { val: "effettivo", raw: "effettivo", bold: true },
+          "E2": { val: "tot", raw: "tot", bold: true },
+          "F2": { val: m.f2, raw: "=SUM(B2:B15)", formula: true, num: true },
+          "G2": { val: m.g2, raw: "=SUM(C2:C34)", formula: true, num: true },
+          "A18": { val: "libro", raw: "libro" },
+          "B18": { val: Number(state.libro) || 0, raw: Number(state.libro) || 0, num: true },
+          "A21": { val: "SICURO ANTICIPO", raw: "SICURO ANTICIPO", bold: true },
+          "B21": { val: m.b21, raw: "=C2+C3+B4+C6+B5+C9+B12+C14", formula: true, num: true },
+          "B23": { val: m.b23, raw: "=F2-B21", formula: true, num: true },
+          "C23": { val: m.c23, raw: "=B10+B7+B8+B15+B11+B13", formula: true, num: true },
+          "B27": { val: m.b27, raw: "=365-120", formula: true, num: true }
+        };
 
-        var html = "<thead><tr><th class=\"corner-hdr\"></th>";
-        COLS.forEach(function (c) {
-          html += "<th class=\"col-hdr\">" + c + "</th>";
-        });
-        html += "</tr></thead><tbody>";
-
-        for (var r = 1; r <= TOTAL_ROWS; r++) {
-          html += "<tr><td class=\"row-hdr num\">" + r + "</td>";
-          for (var cIdx = 0; cIdx < COLS.length; cIdx++) {
-            var c = COLS[cIdx];
-            var coord = c + r;
-            var cell = cells[coord];
-            var classes = ["xl-cell"];
-            if (coord === selectedExcelCell) {
-              classes.push("selected");
+        var memberCols = ["H", "I", "J", "K", "L"];
+        for (var i = 0; i < state.participants.length; i++) {
+          var p = state.participants[i];
+          var r = p.row;
+          map["A" + r] = { val: p.name, raw: p.name };
+          map["B" + r] = {
+            val: getStima(p),
+            raw: p.stimaFormula ? p.stimaFormula : getStima(p),
+            formula: !!p.stimaFormula,
+            num: true
+          };
+          if (p.effettivo !== null && p.effettivo !== "") {
+            map["C" + r] = { val: Number(p.effettivo), raw: Number(p.effettivo), num: true };
+          }
+          if (p.stato) {
+            map["D" + r] = { val: p.stato, raw: p.stato };
+          }
+          if (p.membri && p.membri.length > 0) {
+            for (var k = 0; k < p.membri.length && k < memberCols.length; k++) {
+              map[memberCols[k] + r] = { val: p.membri[k], raw: p.membri[k] };
             }
+          }
+        }
+        return map;
+      }
 
-            var displayVal = "";
+      function renderExcelGrid() {
+        var table = document.getElementById("excel-grid-table");
+        var cols = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+        var map = buildExcelCellsMap();
+
+        var html = '<thead><tr><th class="row-num">#</th>';
+        for (var c = 0; c < cols.length; c++) {
+          html += '<th>' + cols[c] + '</th>';
+        }
+        html += '</tr></thead><tbody>';
+
+        for (var r = 1; r <= 27; r++) {
+          html += '<tr><th class="row-num">' + r + '</th>';
+          for (var cIdx = 0; cIdx < cols.length; cIdx++) {
+            var coord = cols[cIdx] + r;
+            var cell = map[coord];
+            var classes = [];
+            if (coord === selectedCoord) classes.push("selected-cell");
             if (cell) {
-              if (cell.isHeader) classes.push("xl-header-row");
-              if (cell.bold) classes.push("xl-bold");
-              if (cell.stato) {
-                var sKey = cell.stato === "DARA'" ? "DARA" : cell.stato;
-                classes.push("xl-stato-" + sKey);
-              }
-
-              if (cell.formula) {
-                classes.push("xl-formula");
-                if (showRawFormulas) {
-                  classes.push("xl-formula-raw");
-                  displayVal = escapeHtml(cell.formula);
-                } else {
-                  if (cell.isNum) classes.push("xl-num");
-                  displayVal = escapeHtml(String(cell.value));
-                }
-              } else {
-                if (cell.isNum) classes.push("xl-num");
-                displayVal =
-                  cell.value !== undefined && cell.value !== null ? escapeHtml(String(cell.value)) : "";
-              }
+              if (cell.num) classes.push("cell-num");
+              if (cell.formula) classes.push("cell-formula");
+              if (cell.bold) classes.push("cell-bold");
             }
-
-            html += "<td class=\"" + classes.join(" ") + "\" data-coord=\"" + coord + "\">" + displayVal + "</td>";
+            var display = "";
+            if (cell) {
+              display = showFormulas ? String(cell.raw) : String(cell.val);
+            }
+            html += '<td class="' + classes.join(" ") + '" data-action="select-cell" data-coord="' + coord + '">' + escapeHtml(display) + '</td>';
           }
-          html += "</tr>";
+          html += '</tr>';
         }
-
-        html += "</tbody>";
+        html += '</tbody>';
         table.innerHTML = html;
 
-        updateFormulaBar(cells);
-      }
-
-      function updateFormulaBar(cells) {
-        var coordEl = document.getElementById("fbCoord");
-        var contentEl = document.getElementById("fbContent");
-        coordEl.textContent = selectedExcelCell;
-
-        var cell = cells[selectedExcelCell];
-        if (!cell) {
-          contentEl.textContent = selectedExcelCell + ": (cella vuota)";
-          return;
-        }
-        if (cell.formula) {
-          contentEl.textContent = selectedExcelCell + ": " + cell.formula + "  (Valore: " + cell.value + ")";
+        var sel = map[selectedCoord];
+        document.getElementById("fb-coord").textContent = selectedCoord;
+        if (sel) {
+          document.getElementById("fb-content").textContent = sel.formula
+            ? (sel.raw + "  →  " + sel.val)
+            : String(sel.val);
         } else {
-          contentEl.textContent = selectedExcelCell + ": " + String(cell.value);
+          document.getElementById("fb-content").textContent = "(cella vuota)";
         }
       }
 
       function exportCsv() {
-        var calc = computeWorkbook();
-        var lines = [
-          ["Riga", "Nome", "Stima (€)", "Effettivo (€)", "Stato", "Gruppo (H-L)", "Formula"].join(";")
-        ];
-
-        state.entries.forEach(function (entry) {
-          var rc = calc.byRow[entry.row];
-          lines.push(
-            [
-              entry.row,
-              "\"" + entry.name + "\"",
-              rc.stimaComputed,
-              entry.effettivo !== null ? entry.effettivo : "",
-              "\"" + entry.stato + "\"",
-              "\"" + entry.groupCols.join(", ") + "\"",
-              "\"" + (entry.stimaFormula || "") + "\""
-            ].join(";")
-          );
-        });
-
-        lines.push("");
-        lines.push(["F2", "Totale Stima", calc.F2, "", "", "", "=SUM(B2:B15)"].join(";"));
-        lines.push(["C2:C15", "Effettivo Raccolto", "", calc.sumC2C15, "", "", ""].join(";"));
-        lines.push(["G2", "Totale Foglio", "", calc.G2, "", "", "=SUM(C2:C34)"].join(";"));
-        lines.push(["B18", "libro", state.libro, "", "", "", ""].join(";"));
-        lines.push(["B21", "SICURO ANTICIPO", calc.B21, "", "", "", "=C2+C3+B4+C6+C5+C9+C12+C14"].join(";"));
-        lines.push(["B23", "Differenza F2 - B21", calc.B23, "", "", "", "=F2-B21"].join(";"));
-        lines.push(["C23", "Somma DARE/DARA'", calc.C23, "", "", "", "=B10+B7+B8+B15+B11+B13"].join(";"));
-        lines.push(["B27", "Calcolo B27", calc.B27, "", "", "", "=365-120"].join(";"));
-
-        var csvContent = "\uFEFF" + lines.join("\r\n");
-        var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        var url = URL.createObjectURL(blob);
-        var link = document.createElement("a");
-        link.href = url;
-        link.download = "regalstef_riepilogo.csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        showToast("<span>File <strong>regalstef_riepilogo.csv</strong> scaricato correttamente.</span>", false, 3000);
-      }
-
-      function bindEvents() {
-        // Cambio Schede
-        var tabBtnInteractive = document.getElementById("tabBtnInteractive");
-        var tabBtnExcel = document.getElementById("tabBtnExcel");
-        var panelInteractive = document.getElementById("panelInteractive");
-        var panelExcel = document.getElementById("panelExcel");
-
-        function switchTab(target) {
-          var isInt = target === "interactive";
-          tabBtnInteractive.classList.toggle("active", isInt);
-          tabBtnInteractive.setAttribute("aria-selected", String(isInt));
-          panelInteractive.classList.toggle("active", isInt);
-
-          tabBtnExcel.classList.toggle("active", !isInt);
-          tabBtnExcel.setAttribute("aria-selected", String(!isInt));
-          panelExcel.classList.toggle("active", !isInt);
+        var m = computeMetrics();
+        var lines = ["Riga;Partecipante;Stima;Effettivo;Stato;Membri Gruppo"];
+        for (var i = 0; i < state.participants.length; i++) {
+          var p = state.participants[i];
+          var eff = (p.effettivo !== null && p.effettivo !== "") ? p.effettivo : "";
+          var membri = p.membri.join(", ");
+          lines.push([p.row, p.name, getStima(p), eff, p.stato, membri].join(";"));
         }
+        lines.push("");
+        lines.push("Totale Stima (F2);;" + m.f2);
+        lines.push("Effettivo Raccolto (C2:C15);;;" + m.sumEffReal);
+        lines.push("Sicuro Anticipo (B21);;" + m.b21);
+        lines.push("Da Raccogliere (B23/C23);;" + m.b23);
 
-        tabBtnInteractive.addEventListener("click", function () {
-          switchTab("interactive");
-        });
+        var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "regalstef_aggiornato.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("CSV esportato!");
+      }
 
-        tabBtnExcel.addEventListener("click", function () {
-          switchTab("excel");
-        });
+      // Delegated Click Handler
+      document.addEventListener("click", function (e) {
+        var target = e.target.closest("[data-action]");
+        if (!target) return;
 
-        // Ricerca
-        var searchInput = document.getElementById("searchInput");
-        var searchClear = document.getElementById("searchClear");
+        var action = target.getAttribute("data-action");
 
-        searchInput.addEventListener("input", function (e) {
-          searchQuery = e.target.value;
-          searchClear.classList.toggle("visible", searchQuery.length > 0);
-          renderAll();
-        });
-
-        searchClear.addEventListener("click", function () {
-          searchQuery = "";
-          searchInput.value = "";
-          searchClear.classList.remove("visible");
-          searchInput.focus();
-          renderAll();
-        });
-
-        // Filtri rapidi per stato
-        document.getElementById("filterPills").addEventListener("click", function (e) {
-          var btn = e.target.closest(".filter-pill");
-          if (!btn) return;
-          statusFilter = btn.getAttribute("data-filter");
-          renderAll();
-        });
-
-        // Eventi tabella partecipanti
-        var tbody = document.getElementById("participantsTbody");
-
-        tbody.addEventListener("input", function (e) {
-          var input = e.target.closest(".effettivo-input");
-          if (!input) return;
-          var rowNum = Number(input.getAttribute("data-row"));
-          var entry = state.entries.find(function (item) {
-            return item.row === rowNum;
-          });
-          if (!entry) return;
-
-          var valStr = input.value.trim();
-          if (valStr === "") {
-            entry.effettivo = null;
-          } else {
-            var parsed = Number(valStr);
-            entry.effettivo = !isNaN(parsed) && parsed >= 0 ? parsed : 0;
-          }
-          saveState();
-
-          var calc = computeWorkbook();
-          updateSummaryIndicators(calc);
-
-          var q = searchQuery.trim().toLowerCase();
-          var filteredEff = 0;
-          state.entries.forEach(function (en) {
-            if (statusFilter !== "ALL" && en.stato !== statusFilter) return;
-            if (
-              q &&
-              en.name.toLowerCase().indexOf(q) === -1 &&
-              !en.groupCols.some(function (m) {
-                return m.toLowerCase().indexOf(q) !== -1;
-              })
-            ) {
-              return;
+        if (action === "switch-tab") {
+          var tab = target.getAttribute("data-tab");
+          currentTab = tab;
+          var tabBtns = document.querySelectorAll(".tab-btn");
+          for (var i = 0; i < tabBtns.length; i++) {
+            if (tabBtns[i].getAttribute("data-tab") === tab) {
+              tabBtns[i].classList.add("active");
+            } else {
+              tabBtns[i].classList.remove("active");
             }
-            filteredEff += calc.byRow[en.row].effettivoNum;
-          });
-          document.getElementById("tfootEffettivo").textContent = formatEuro(filteredEff);
-          renderExcelGrid(calc);
-        });
-
-        tbody.addEventListener("change", function (e) {
-          var select = e.target.closest(".stato-select");
-          if (!select) return;
-          var rowNum = Number(select.getAttribute("data-row"));
-          var entry = state.entries.find(function (item) {
-            return item.row === rowNum;
-          });
-          if (!entry) return;
-
-          entry.stato = select.value;
-          entry.excelD = entry.stato === "Pagato" ? "" : entry.stato;
-          saveState();
-          renderAll();
-        });
-
-        tbody.addEventListener("click", function (e) {
-          var payBtn = e.target.closest(".btn-pay-quick");
-          if (!payBtn) return;
-          var rowNum = Number(payBtn.getAttribute("data-pay-row"));
-          var entry = state.entries.find(function (item) {
-            return item.row === rowNum;
-          });
-          if (!entry) return;
-
-          var calc = computeWorkbook();
-          entry.effettivo = calc.byRow[rowNum].stimaComputed;
-          entry.stato = "Pagato";
-          entry.excelD = "";
-          saveState();
-          renderAll();
-        });
-
-        // Modifica "libro" (B18)
-        var inputLibro = document.getElementById("inputLibro");
-        inputLibro.addEventListener("input", function (e) {
-          var val = Number(e.target.value);
-          state.libro = !isNaN(val) && val >= 0 ? val : 0;
-          saveState();
-          renderAll();
-        });
-
-        document.getElementById("btnLibroMinus").addEventListener("click", function () {
-          state.libro = Math.max(0, state.libro - 5);
-          saveState();
-          renderAll();
-        });
-
-        document.getElementById("btnLibroPlus").addEventListener("click", function () {
-          state.libro = state.libro + 5;
-          saveState();
-          renderAll();
-        });
-
-        // Toggle Mostra Formule nella Griglia Excel
-        var btnToggleFormulas = document.getElementById("btnToggleFormulas");
-        var toggleFormulasLabel = document.getElementById("toggleFormulasLabel");
-        btnToggleFormulas.addEventListener("click", function () {
-          showRawFormulas = !showRawFormulas;
-          btnToggleFormulas.classList.toggle("active", showRawFormulas);
-          btnToggleFormulas.setAttribute("aria-pressed", String(showRawFormulas));
-          toggleFormulasLabel.textContent = showRawFormulas ? "Mostra Valori" : "Mostra Formule (=fx)";
-          renderExcelGrid(computeWorkbook());
-        });
-
-        // Selezione cella nella Griglia Excel
-        document.getElementById("excelGridTable").addEventListener("click", function (e) {
-          var td = e.target.closest("td.xl-cell");
-          if (!td) return;
-          selectedExcelCell = td.getAttribute("data-coord");
-          renderExcelGrid(computeWorkbook());
-        });
-
-        // Esporta CSV
-        document.getElementById("btnExportCsv").addEventListener("click", exportCsv);
-
-        // Ripristina Dati Originali (con conferma inline)
-        document.getElementById("btnResetAsk").addEventListener("click", function () {
-          showToast(
-            "<span>Vuoi ripristinare tutti i valori originali di <strong>regalstef.xlsx</strong>?</span>" +
-              "<div class=\"toast-actions\">" +
-              "<button type=\"button\" id=\"btnConfirmReset\" class=\"btn btn-sm btn-danger\">Sì, ripristina</button>" +
-              "<button type=\"button\" id=\"btnCancelReset\" class=\"btn btn-sm btn-neutral\">Annulla</button>" +
-              "</div>",
-            true,
-            0
-          );
-
-          var btnConfirm = document.getElementById("btnConfirmReset");
-          var btnCancel = document.getElementById("btnCancelReset");
-
-          if (btnConfirm) {
-            btnConfirm.addEventListener("click", function () {
-              state = getFreshDefaultState();
-              saveState();
-              searchQuery = "";
-              searchInput.value = "";
-              searchClear.classList.remove("visible");
-              statusFilter = "ALL";
-              renderAll();
-              showToast("<span>Dati originali di <strong>regalstef.xlsx</strong> ripristinati.</span>", false, 3000);
-            });
           }
-
-          if (btnCancel) {
-            btnCancel.addEventListener("click", hideToast);
+          document.getElementById("panel-summary").classList.toggle("active", tab === "summary");
+          document.getElementById("panel-grid").classList.toggle("active", tab === "grid");
+          if (tab === "grid") {
+            renderExcelGrid();
           }
-        });
-      }
+        } else if (action === "set-filter") {
+          currentFilter = target.getAttribute("data-filter") || "ALL";
+          renderTable();
+        } else if (action === "pay-row") {
+          var rowNum = Number(target.getAttribute("data-row"));
+          var p = getRowByNum(rowNum);
+          if (p) {
+            p.effettivo = getStima(p);
+            p.stato = "";
+            saveState();
+            renderTable();
+            showToast(p.name + ": segnato pagato (" + p.effettivo + " €)");
+          }
+        } else if (action === "clear-row") {
+          var rowNumClear = Number(target.getAttribute("data-row"));
+          var pClear = getRowByNum(rowNumClear);
+          if (pClear) {
+            pClear.effettivo = null;
+            saveState();
+            renderTable();
+            showToast(pClear.name + ": importo azzerato");
+          }
+        } else if (action === "toggle-formulas") {
+          showFormulas = !showFormulas;
+          target.classList.toggle("active", showFormulas);
+          target.textContent = showFormulas ? "Mostra Valori" : "Mostra Formule (=fx)";
+          renderExcelGrid();
+        } else if (action === "select-cell") {
+          selectedCoord = target.getAttribute("data-coord");
+          renderExcelGrid();
+        } else if (action === "export-csv") {
+          exportCsv();
+        } else if (action === "reset-data") {
+          state = cloneDefaults();
+          document.getElementById("input-libro").value = state.libro;
+          saveState();
+          renderTable();
+          if (currentTab === "grid") renderExcelGrid();
+          showToast("Dati originali ripristinati");
+        }
+      });
 
-      function init() {
-        state = loadState();
-        bindEvents();
-        renderAll();
-      }
+      // Delegated Input Handler (does NOT destroy focused input!)
+      document.addEventListener("input", function (e) {
+        var target = e.target;
+        if (target.id === "search-box") {
+          searchQuery = target.value.trim();
+          renderTable();
+          return;
+        }
+        if (target.id === "input-libro") {
+          state.libro = target.value === "" ? 0 : Number(target.value);
+          saveState();
+          updateCalculationsOnly();
+          return;
+        }
+        if (target.getAttribute("data-action") === "edit-eff") {
+          var rowNum = Number(target.getAttribute("data-row"));
+          var p = getRowByNum(rowNum);
+          if (p) {
+            p.effettivo = target.value === "" ? null : Number(target.value);
+            if (p.effettivo !== null && p.effettivo > 0 && (p.stato === "DARE" || p.stato === "DARA'")) {
+              p.stato = "";
+            }
+            saveState();
+            updateCalculationsOnly();
+          }
+        }
+      });
 
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", init);
-      } else {
-        init();
-      }
+      // Delegated Change Handler
+      document.addEventListener("change", function (e) {
+        var target = e.target;
+        var action = target.getAttribute("data-action");
+        if (action === "edit-stato") {
+          var rowNum = Number(target.getAttribute("data-row"));
+          var p = getRowByNum(rowNum);
+          if (p) {
+            p.stato = target.value;
+            saveState();
+            renderTable();
+          }
+        } else if (action === "edit-eff") {
+          renderTable();
+        }
+      });
+
+      // Initial render
+      document.getElementById("input-libro").value = state.libro;
+      renderTable();
     })();
   </script>
 </body>
