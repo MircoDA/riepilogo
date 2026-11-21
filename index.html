@@ -1,0 +1,2279 @@
+document.getElementById("btnCancelReset").addEventListener("click", hideToast);
+        });
+      }
+
+      // Avvio applicazione
+      bindEvents();
+      renderAll();
+    })();<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regali Stefano - Riepilogo Quote (regalstef.xlsx)</title>
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & RESET (Zero dipendenze esterne, pronto per GitHub Pages)
+       ========================================================================== */
+    :root {
+      --bg-page: #f4f7f5;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8fafc;
+      --bg-excel-header: #eef2f0;
+      --excel-green: #107c41;
+      --excel-green-dark: #0b5c30;
+      --excel-green-light: #e7f5ee;
+      --excel-green-border: #b7dec9;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --border-color: #dbe3df;
+      --border-grid: #cbd5e1;
+
+      /* Colori stati */
+      --stato-pagato-bg: #dcfce7;
+      --stato-pagato-text: #166534;
+      --stato-pagato-border: #86efac;
+
+      --stato-dare-bg: #fee2e2;
+      --stato-dare-text: #991b1b;
+      --stato-dare-border: #fca5a5;
+
+      --stato-dara-bg: #fef3c7;
+      --stato-dara-text: #92400e;
+      --stato-dara-border: #fcd34d;
+
+      --stato-rit-bg: #e0e7ff;
+      --stato-rit-text: #3730a3;
+      --stato-rit-border: #a5b4fc;
+
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Numeri allineati perfettamente nelle tabelle e nei totali */
+    .num {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    /* ==========================================================================
+       HEADER PRINCIPALE
+       ========================================================================== */
+    .app-header {
+      background: linear-gradient(135deg, #0e6b38 0%, #107c41 55%, #16924e 100%);
+      color: #ffffff;
+      padding: 18px 20px;
+      box-shadow: 0 2px 10px rgba(11, 92, 48, 0.2);
+    }
+
+    .header-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 3px;
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .file-pill {
+      background: rgba(0, 0, 0, 0.22);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      min-height: 38px;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-header-primary {
+      background-color: #ffffff;
+      color: var(--excel-green-dark);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-header-primary:hover {
+      background-color: #f0fdf4;
+    }
+
+    .btn-header-ghost {
+      background-color: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .btn-header-ghost:hover {
+      background-color: rgba(255, 255, 255, 0.24);
+    }
+
+    /* ==========================================================================
+       BANNER DI CONFERMA / NOTIFICHE (Sostituisce alert/confirm)
+       ========================================================================== */
+    .toast-bar {
+      max-width: 1240px;
+      margin: 14px auto 0;
+      padding: 0 16px;
+      display: none;
+    }
+
+    .toast-bar.visible {
+      display: block;
+    }
+
+    .toast-content {
+      background: #ffffff;
+      border: 1px solid var(--excel-green-border);
+      border-left: 4px solid var(--excel-green);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .toast-content.warning {
+      border-color: #fcd34d;
+      border-left-color: #d97706;
+      background: #fffbeb;
+    }
+
+    .toast-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      min-height: 32px;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: #ffffff;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    .btn-neutral {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .btn-neutral:hover {
+      background: #cbd5e1;
+    }
+
+    /* ==========================================================================
+       CONTAINER & NAVIGAZIONE TAB
+       ========================================================================== */
+    .main-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 18px 16px 44px;
+    }
+
+    .tabs-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--excel-green);
+      color: var(--excel-green-dark);
+    }
+
+    .tab-btn.active {
+      background: var(--excel-green);
+      color: #ffffff;
+      border-color: var(--excel-green);
+      box-shadow: 0 2px 6px rgba(16, 124, 65, 0.25);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ==========================================================================
+       KPI CARDS (4 SCHEDE RIEPILOGO)
+       ========================================================================== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 600px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .kpi-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--excel-green);
+    }
+
+    .kpi-card.kpi-amber::before {
+      background: #d97706;
+    }
+
+    .kpi-card.kpi-blue::before {
+      background: #0284c7;
+    }
+
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-secondary);
+    }
+
+    .cell-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: var(--excel-green-light);
+      color: var(--excel-green-dark);
+      border: 1px solid var(--excel-green-border);
+    }
+
+    .kpi-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .kpi-sub {
+      font-size: 0.79rem;
+      color: var(--text-muted);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--excel-green);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    /* ==========================================================================
+       BARRA RICERCA E FILTRI
+       ========================================================================== */
+    .controls-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1 1 260px;
+      max-width: 420px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 9px 34px 9px 36px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      background: var(--bg-subtle);
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--excel-green);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(16, 124, 65, 0.12);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px;
+      display: none;
+    }
+
+    .search-clear.visible {
+      display: block;
+    }
+
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .filter-pill {
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .filter-pill:hover {
+      border-color: var(--excel-green);
+      color: var(--excel-green-dark);
+    }
+
+    .filter-pill.active {
+      background: var(--excel-green-dark);
+      color: #ffffff;
+      border-color: var(--excel-green-dark);
+    }
+
+    /* ==========================================================================
+       TABELLA PARTECIPANTI (RIGHE 2-15)
+       ========================================================================== */
+    .table-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+    }
+
+    .data-table th {
+      background: var(--bg-excel-header);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 11px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .data-table th.text-right,
+    .data-table td.text-right {
+      text-align: right;
+    }
+
+    .data-table th.text-center,
+    .data-table td.text-center {
+      text-align: center;
+    }
+
+    .data-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #edf2ef;
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: #f8fbf9;
+    }
+
+    .data-table tbody tr.row-group {
+      background-color: #fafdfb;
+    }
+
+    .row-idx {
+      display: inline-block;
+      min-width: 26px;
+      text-align: center;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      border-radius: 4px;
+      padding: 2px 5px;
+    }
+
+    .person-name {
+      font-weight: 700;
+      font-size: 0.96rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .group-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--excel-green-light);
+      color: var(--excel-green-dark);
+      border: 1px solid var(--excel-green-border);
+      padding: 1px 6px;
+      border-radius: 999px;
+    }
+
+    .submembers-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .submember-chip {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 999px;
+      transition: all 0.15s ease;
+    }
+
+    .submember-chip.highlight {
+      background: #fef08a;
+      border-color: #eab308;
+      color: #713f12;
+      font-weight: 700;
+    }
+
+    .stima-amount {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+
+    .formula-hint {
+      display: inline-block;
+      margin-top: 2px;
+      font-size: 0.73rem;
+      color: var(--excel-green-dark);
+      background: var(--excel-green-light);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* Input Effettivo editabile */
+    .effettivo-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .effettivo-input {
+      width: 82px;
+      padding: 6px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      text-align: right;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: #ffffff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .effettivo-input:focus {
+      outline: none;
+      border-color: var(--excel-green);
+      box-shadow: 0 0 0 3px rgba(16, 124, 65, 0.14);
+    }
+
+    .effettivo-input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    /* Select Stato colorato */
+    .stato-select {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      min-width: 96px;
+      text-align: center;
+    }
+
+    .stato-select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(16, 124, 65, 0.16);
+    }
+
+    .stato-Pagato {
+      background-color: var(--stato-pagato-bg);
+      color: var(--stato-pagato-text);
+      border-color: var(--stato-pagato-border);
+    }
+
+    .stato-DARE {
+      background-color: var(--stato-dare-bg);
+      color: var(--stato-dare-text);
+      border-color: var(--stato-dare-border);
+    }
+
+    .stato-DARA {
+      background-color: var(--stato-dara-bg);
+      color: var(--stato-dara-text);
+      border-color: var(--stato-dara-border);
+    }
+
+    .stato-rit {
+      background-color: var(--stato-rit-bg);
+      color: var(--stato-rit-text);
+      border-color: var(--stato-rit-border);
+    }
+
+    .data-table tfoot td {
+      background: var(--bg-excel-header);
+      font-weight: 800;
+      border-top: 2px solid var(--border-color);
+      padding: 12px 14px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       SEZIONE VOCI EXTRA E FORMULE DEL FOGLIO (RIGHE 18-27)
+       ========================================================================== */
+    .section-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .formulas-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .formulas-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .formulas-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .formula-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 13px 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .formula-box.editable-box {
+      background: #f0fdf4;
+      border-color: var(--excel-green-border);
+    }
+
+    .formula-box-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .formula-label {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .formula-val {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--excel-green-dark);
+    }
+
+    .formula-expr {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      padding: 4px 8px;
+      border-radius: 5px;
+      word-break: break-all;
+    }
+
+    .libro-editor {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .libro-step-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--excel-green-border);
+      background: #ffffff;
+      color: var(--excel-green-dark);
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .libro-step-btn:hover {
+      background: var(--excel-green-light);
+    }
+
+    /* ==========================================================================
+       TAB 2: GRIGLIA EXCEL (FOGLIO1 - 27 RIGHE x 12 COLONNE A..L)
+       ========================================================================== */
+    .excel-toolbar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .formula-bar {
+      display: flex;
+      align-items: center;
+      flex: 1 1 320px;
+      border: 1px solid var(--border-grid);
+      border-radius: var(--radius-sm);
+      background: #ffffff;
+      overflow: hidden;
+      min-height: 36px;
+    }
+
+    .fb-coord {
+      background: var(--bg-excel-header);
+      border-right: 1px solid var(--border-grid);
+      padding: 6px 12px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      color: var(--text-primary);
+      min-width: 58px;
+      text-align: center;
+    }
+
+    .fb-fx {
+      padding: 6px 10px;
+      font-style: italic;
+      font-weight: 700;
+      color: var(--excel-green);
+      border-right: 1px solid #e2e8f0;
+      user-select: none;
+    }
+
+    .fb-content {
+      padding: 6px 12px;
+      font-size: 0.86rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toggle-formulas-btn {
+      background: var(--excel-green-light);
+      color: var(--excel-green-dark);
+      border: 1px solid var(--excel-green-border);
+    }
+
+    .toggle-formulas-btn.active {
+      background: var(--excel-green);
+      color: #ffffff;
+      border-color: var(--excel-green);
+    }
+
+    .excel-sheet-wrapper {
+      background: #ffffff;
+      border: 1px solid var(--border-grid);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      overflow-x: auto;
+      box-shadow: var(--shadow-sm);
+    }
+
+    table.excel-grid {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 980px;
+      font-size: 0.83rem;
+    }
+
+    .excel-grid th.col-hdr,
+    .excel-grid th.corner-hdr {
+      background: var(--bg-excel-header);
+      color: #334155;
+      font-weight: 700;
+      text-align: center;
+      border: 1px solid var(--border-grid);
+      padding: 6px 8px;
+      user-select: none;
+      min-width: 72px;
+    }
+
+    .excel-grid th.corner-hdr {
+      min-width: 42px;
+      width: 42px;
+    }
+
+    .excel-grid td.row-hdr {
+      background: var(--bg-excel-header);
+      color: #334155;
+      font-weight: 700;
+      text-align: center;
+      border: 1px solid var(--border-grid);
+      padding: 5px 6px;
+      user-select: none;
+      width: 42px;
+    }
+
+    .excel-grid td.xl-cell {
+      border: 1px solid #d8e0e8;
+      padding: 5px 8px;
+      height: 29px;
+      white-space: nowrap;
+      cursor: cell;
+      transition: background-color 0.08s;
+    }
+
+    .excel-grid td.xl-cell:hover {
+      background-color: #f1f8f4;
+    }
+
+    .excel-grid td.xl-cell.selected {
+      outline: 2px solid var(--excel-green);
+      outline-offset: -2px;
+      background-color: #eefaf3;
+    }
+
+    .excel-grid td.xl-header-row {
+      font-weight: 700;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+
+    .excel-grid td.xl-num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .excel-grid td.xl-formula {
+      background-color: #f3fbf6;
+      color: #0b5c30;
+      font-weight: 600;
+    }
+
+    .excel-grid td.xl-formula-raw {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.77rem;
+      color: #065f46;
+      background-color: #ecfdf5;
+    }
+
+    .excel-grid td.xl-bold {
+      font-weight: 700;
+    }
+
+    .excel-grid td.xl-stato-Pagato {
+      background-color: #dcfce7;
+      color: #166534;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .excel-grid td.xl-stato-DARE {
+      background-color: #fee2e2;
+      color: #991b1b;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .excel-grid td.xl-stato-DARA {
+      background-color: #fef3c7;
+      color: #92400e;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .excel-grid td.xl-stato-rit {
+      background-color: #e0e7ff;
+      color: #3730a3;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .sheet-tab-footer {
+      background: var(--bg-excel-header);
+      border-top: 1px solid var(--border-grid);
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .sheet-pill {
+      background: #ffffff;
+      color: var(--excel-green-dark);
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 4px 4px 0 0;
+      border: 1px solid var(--border-grid);
+      border-bottom: 2px solid var(--excel-green);
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- ========================================================================
+       HEADER APPLICAZIONE
+       ======================================================================== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <!-- Icona foglio di calcolo Excel SVG inline -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="3" y1="15" x2="21" y2="15"></line>
+            <line x1="9" y1="3" x2="9" y2="21"></line>
+            <line x1="15" y1="3" x2="15" y2="21"></line>
+          </svg>
+        </div>
+        <div>
+          <h1>Regali Stefano - Riepilogo Quote</h1>
+          <div class="brand-sub">
+            <span class="file-pill">regalstef.xlsx • Foglio1</span>
+            <span>Salvataggio automatico nel browser</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" id="btnExportCsv" class="btn btn-header-primary" title="Scarica il riepilogo aggiornato in formato CSV per Excel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Esporta CSV
+        </button>
+        <button type="button" id="btnResetAsk" class="btn btn-header-ghost" title="Ripristina i valori originali del file Excel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+          Ripristina Dati Originali
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner notifiche / conferma ripristino (senza alert o confirm) -->
+  <div id="toastBar" class="toast-bar" role="status" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       CONTENUTO PRINCIPALE
+       ======================================================================== -->
+  <main class="main-container">
+    <!-- Barra Tab -->
+    <nav class="tabs-bar" role="tablist" aria-label="Viste del foglio Excel">
+      <button type="button" role="tab" id="tabBtnInteractive" class="tab-btn active" aria-selected="true" aria-controls="panelInteractive">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+        Riepilogo Interattivo
+      </button>
+      <button type="button" role="tab" id="tabBtnExcel" class="tab-btn" aria-selected="false" aria-controls="panelExcel">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <line x1="3" y1="9" x2="21" y2="9"></line>
+          <line x1="3" y1="15" x2="21" y2="15"></line>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+          <line x1="15" y1="3" x2="15" y2="21"></line>
+        </svg>
+        Griglia Excel (Foglio1)
+      </button>
+    </nav>
+
+    <!-- ======================================================================
+         TAB 1: RIEPILOGO INTERATTIVO
+         ====================================================================== -->
+    <section id="panelInteractive" class="tab-panel active" role="tabpanel" aria-labelledby="tabBtnInteractive">
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <div>
+            <div class="kpi-header">
+              <span class="kpi-title">Totale Stima</span>
+              <span class="cell-tag mono">F2</span>
+            </div>
+            <div id="kpiTotaleStima" class="kpi-value num">365 €</div>
+          </div>
+          <div class="kpi-sub mono">=SUM(B2:B15)</div>
+        </article>
+
+        <article class="kpi-card kpi-blue">
+          <div>
+            <div class="kpi-header">
+              <span class="kpi-title">Effettivo Raccolto</span>
+              <span class="cell-tag mono">C2:C15</span>
+            </div>
+            <div id="kpiEffettivoRaccolto" class="kpi-value num">90 €</div>
+          </div>
+          <div>
+            <div id="kpiG2Note" class="kpi-sub">Excel G2 = SUM(C2:C34) = 275 €</div>
+            <div class="progress-track" aria-hidden="true">
+              <div id="kpiProgressFill" class="progress-fill" style="width: 24.7%;"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div>
+            <div class="kpi-header">
+              <span class="kpi-title">Sicuro Anticipo</span>
+              <span class="cell-tag mono">B21</span>
+            </div>
+            <div id="kpiSicuroAnticipo" class="kpi-value num">180 €</div>
+          </div>
+          <div class="kpi-sub mono">=C2+C3+B4+C6+C5+C9+C12+C14</div>
+        </article>
+
+        <article class="kpi-card kpi-amber">
+          <div>
+            <div class="kpi-header">
+              <span class="kpi-title">Rimanente da Raccogliere</span>
+              <span class="cell-tag mono">B23 / C23</span>
+            </div>
+            <div id="kpiRimanente" class="kpi-value num">185 €</div>
+          </div>
+          <div id="kpiRimanenteSub" class="kpi-sub">Diff. F2-B21: 185 € • DARE/DARÀ: 185 €</div>
+        </article>
+      </div>
+
+      <!-- Ricerca e Filtri -->
+      <div class="controls-card">
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Cerca nome o partecipante gruppo (es. federico, valeria)..."
+            aria-label="Cerca partecipante"
+          />
+          <button type="button" id="searchClear" class="search-clear" title="Pulisci ricerca" aria-label="Pulisci ricerca">✕</button>
+        </div>
+
+        <div id="filterPills" class="filter-pills" role="group" aria-label="Filtra per stato">
+          <button type="button" class="filter-pill active" data-filter="ALL">Tutti (14)</button>
+          <button type="button" class="filter-pill" data-filter="Pagato">Pagati</button>
+          <button type="button" class="filter-pill" data-filter="DARE">DARE</button>
+          <button type="button" class="filter-pill" data-filter="DARA'">DARÀ</button>
+          <button type="button" class="filter-pill" data-filter="rit">rit</button>
+        </div>
+      </div>
+
+      <!-- Tabella Principale (Righe 2-15) -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="text-center" style="width: 64px;">Riga</th>
+                <th>Partecipante / Gruppo (Col. A)</th>
+                <th class="text-right">Stima (Col. B)</th>
+                <th class="text-right">Effettivo (Col. C)</th>
+                <th class="text-center">Stato (Col. D)</th>
+                <th>Note / Formula</th>
+              </tr>
+            </thead>
+            <tbody id="participantsTbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2">Totale Righe Filtrate / Foglio (B2:B15 &amp; C2:C15)</td>
+                <td id="tfootStima" class="text-right num">365 €</td>
+                <td id="tfootEffettivo" class="text-right num">90 €</td>
+                <td colspan="2" id="tfootCount" style="font-weight: 600; font-size: 0.84rem; color: var(--text-secondary);">14 voci visualizzate</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sezione Voci Extra e Formule del Foglio (Righe 18-27) -->
+      <section class="section-card" aria-labelledby="extraFormulasTitle">
+        <div class="section-header">
+          <h2 id="extraFormulasTitle" class="section-title">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#107c41" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            Voci Extra e Formule del Foglio (Righe 18–27)
+          </h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Modificando <strong>libro (B18)</strong> la quota di Attilio (<span class="mono">B4</span>) si ricalcola automaticamente</span>
+        </div>
+
+        <div class="formulas-grid">
+          <!-- B18: libro (editabile) -->
+          <div class="formula-box editable-box">
+            <div class="formula-box-top">
+              <span class="formula-label">libro</span>
+              <span class="cell-tag mono">A18:B18</span>
+            </div>
+            <div class="libro-editor">
+              <button type="button" id="btnLibroMinus" class="libro-step-btn" title="Riduci di 5 €" aria-label="Riduci quota libro">−</button>
+              <input type="number" id="inputLibro" class="effettivo-input num" min="0" step="1" value="20" aria-label="Importo libro B18" />
+              <span style="font-weight: 700;">€</span>
+              <button type="button" id="btnLibroPlus" class="libro-step-btn" title="Aumenta di 5 €" aria-label="Aumenta quota libro">+</button>
+            </div>
+            <div id="libroEffectHint" class="formula-expr">Aggiorna Attilio (B4): =60-B18+10 = 50 €</div>
+          </div>
+
+          <!-- B21: SICURO ANTICIPO -->
+          <div class="formula-box">
+            <div class="formula-box-top">
+              <span class="formula-label">SICURO ANTICIPO</span>
+              <span class="cell-tag mono">A21:B21</span>
+            </div>
+            <div id="boxB21Val" class="formula-val num">180 €</div>
+            <div class="formula-expr mono">=C2+C3+B4+C6+C5+C9+C12+C14</div>
+          </div>
+
+          <!-- B23: Differenza F2 - B21 -->
+          <div class="formula-box">
+            <div class="formula-box-top">
+              <span class="formula-label">Differenza F2 - B21</span>
+              <span class="cell-tag mono">B23</span>
+            </div>
+            <div id="boxB23Val" class="formula-val num">185 €</div>
+            <div class="formula-expr mono">=F2-B21</div>
+          </div>
+
+          <!-- C23: Somma DARE/DARÀ -->
+          <div class="formula-box">
+            <div class="formula-box-top">
+              <span class="formula-label">Somma DARE/DARÀ</span>
+              <span class="cell-tag mono">C23</span>
+            </div>
+            <div id="boxC23Val" class="formula-val num">185 €</div>
+            <div class="formula-expr mono">=B10+B7+B8+B15+B11+B13</div>
+          </div>
+
+          <!-- G2: Totale Foglio -->
+          <div class="formula-box">
+            <div class="formula-box-top">
+              <span class="formula-label">Totale Foglio G2</span>
+              <span class="cell-tag mono">G2</span>
+            </div>
+            <div id="boxG2Val" class="formula-val num">275 €</div>
+            <div class="formula-expr mono">=SUM(C2:C34)</div>
+          </div>
+
+          <!-- B27: Calcolo B27 -->
+          <div class="formula-box">
+            <div class="formula-box-top">
+              <span class="formula-label">Calcolo B27</span>
+              <span class="cell-tag mono">B27</span>
+            </div>
+            <div id="boxB27Val" class="formula-val num">245 €</div>
+            <div class="formula-expr mono">=365-120</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ======================================================================
+         TAB 2: GRIGLIA EXCEL (FOGLIO1 - 27 RIGHE x 12 COLONNE A..L)
+         ====================================================================== -->
+    <section id="panelExcel" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnExcel">
+      <div class="excel-toolbar">
+        <div class="formula-bar" aria-label="Barra della formula Excel">
+          <div id="fbCoord" class="fb-coord mono">F2</div>
+          <div class="fb-fx">fx</div>
+          <div id="fbContent" class="fb-content mono">=SUM(B2:B15)  →  365</div>
+        </div>
+
+        <button type="button" id="btnToggleFormulas" class="btn toggle-formulas-btn" aria-pressed="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span id="toggleFormulasLabel">Mostra Formule (=fx)</span>
+        </button>
+      </div>
+
+      <div class="excel-sheet-wrapper">
+        <table id="excelGridTable" class="excel-grid" aria-label="Replica Foglio1 di regalstef.xlsx"></table>
+        <div class="sheet-tab-footer">
+          <span class="sheet-pill">Foglio1</span>
+          <span>27 righe × 12 colonne (A–L) • Clicca su qualsiasi cella per ispezionare valore o formula</span>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Replica web statica di <strong>regalstef.xlsx (Foglio1)</strong> • Compatibile con GitHub Pages e uso offline.
+    </p>
+  </main>
+
+  <!-- ========================================================================
+       LOGICA APPLICATIVA E CALCOLO FORMULE EXCEL
+       ======================================================================== -->
+  <script>
+    (function () {
+      "use strict";
+
+      const STORAGE_KEY = "regalstef_xlsx_foglio1_v1";
+
+      /**
+       * Dati originali esatti estratti da regalstef.xlsx (Foglio1, righe 2..15)
+       */
+      const DEFAULT_ENTRIES = [
+        {
+          row: 2,
+          name: "Mirco",
+          stimaBase: 20,
+          stimaFormula: null,
+          effettivo: 20,
+          stato: "Pagato",
+          subMembers: []
+        },
+        {
+          row: 3,
+          name: "Cri",
+          stimaBase: 20,
+          stimaFormula: null,
+          effettivo: 20,
+          stato: "Pagato",
+          subMembers: []
+        },
+        {
+          row: 4,
+          name: "attilio",
+          stimaBase: 50,
+          stimaFormula: "=60-B18+10",
+          effettivo: null,
+          stato: "rit",
+          subMembers: ["federico", "matteo", "rosamaria", "alessandra", "enrico"]
+        },
+        {
+          row: 5,
+          name: "andrea",
+          stimaBase: 20,
+          stimaFormula: null,
+          effettivo: null,
+          stato: "DARE",
+          subMembers: []
+        },
+        {
+          row: 6,
+          name: "marcolino",
+          stimaBase: 20,
+          stimaFormula: null,
+          effettivo: 20,
+          stato: "Pagato",
+          subMembers: []
+        },
+        {
+          row: 7,
+          name: "luca M",
+          stimaBase: 20,
+          stimaFormula: null,
+          effettivo: null,
+          stato: "DARE",
+          subMembers: []
+        },
+        {
+          row: 8,
+          name: "pizz",
+          stimaBase: 20,
+          stimaFormula: null,
+          effettivo: null,
+          stato: "DARE",
+          subMembers: []
+        },
+        {
+          row: 9,
+          name: "elio",
+          stimaBase: 20,
+          stimaFormula: null,
+          effettivo: 20,
+          stato: "Pagato",
+          subMembers: []
+        },
+        {
+          row: 10,
+          name: "enza",
+          stimaBase: 115,
+          stimaFormula: "=120-5",
+          effettivo: null,
+          stato: "DARA'",
+          subMembers: ["valeria", "claudio", "felicia", "angela", "marta"]
+        },
+        {
+          row: 11,
+          name: "mario",
+          stimaBase: 10,
+          stimaFormula: null,
+          effettivo: null,
+          stato: "DARA'",
+          subMembers: []
+        },
+        {
+          row: 12,
+          name: "robi",
+          stimaBase: 20,
+          stimaFormula: null,
+          effettivo: null,
+          stato: "DARE",
+          subMembers: []
+        },
+        {
+          row: 13,
+          name: "silvia",
+          stimaBase: 10,
+          stimaFormula: null,
+          effettivo: null,
+          stato: "DARA'",
+          subMembers: []
+        },
+        {
+          row: 14,
+          name: "daniele",
+          stimaBase: 10,
+          stimaFormula: null,
+          effettivo: 10,
+          stato: "Pagato",
+          subMembers: []
+        },
+        {
+          row: 15,
+          name: "melanie",
+          stimaBase: 10,
+          stimaFormula: null,
+          effettivo: null,
+          stato: "DARE",
+          subMembers: []
+        }
+      ];
+
+      /**
+       * Stato dell'applicazione
+       */
+      let state = loadState();
+      let activeTab = "interactive";
+      let searchQuery = "";
+      let statusFilter = "ALL";
+      let showRawFormulas = false;
+      let selectedExcelCell = "F2";
+      let toastTimeout = null;
+
+      /**
+       * Carica lo stato salvato in localStorage con fallback ai dati originali
+       */
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.entries) && parsed.entries.length === 14) {
+              return {
+                libro: typeof parsed.libro === "number" && !isNaN(parsed.libro) ? parsed.libro : 20,
+                entries: parsed.entries.map((item, idx) => ({
+                  ...DEFAULT_ENTRIES[idx],
+                  effettivo: item.effettivo === "" || item.effettivo === null || isNaN(Number(item.effettivo))
+                    ? null
+                    : Number(item.effettivo),
+                  stato: ["Pagato", "DARE", "DARA'", "rit"].includes(item.stato)
+                    ? item.stato
+                    : DEFAULT_ENTRIES[idx].stato
+                }))
+              };
+            }
+          }
+        } catch (err) {
+          console.warn("Impossibile leggere localStorage:", err);
+        }
+        return getFreshDefaultState();
+      }
+
+      function getFreshDefaultState() {
+        return {
+          libro: 20,
+          entries: DEFAULT_ENTRIES.map((e) => ({
+            ...e,
+            subMembers: [...e.subMembers]
+          }))
+        };
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (err) {
+          console.warn("Impossibile salvare su localStorage:", err);
+        }
+      }
+
+      /**
+       * Formattazione numeri in Euro
+       */
+      function formatEuro(val) {
+        if (val === null || val === undefined || isNaN(val)) return "";
+        const rounded = Math.round(val * 100) / 100;
+        return Number.isInteger(rounded)
+          ? `${rounded} €`
+          : `${rounded.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+      }
+
+      /**
+       * Calcola tutte le stime e le formule di Foglio1 in tempo reale
+       */
+      function computeWorkbook() {
+        const byRow = {};
+        state.entries.forEach((entry) => {
+          let stima = entry.stimaBase;
+          if (entry.row === 4) {
+            // Formula =60-B18+10 (attilio)
+            stima = 60 - state.libro + 10;
+          } else if (entry.row === 10) {
+            // Formula =120-5 (enza)
+            stima = 120 - 5;
+          }
+          byRow[entry.row] = {
+            ...entry,
+            stimaComputed: stima,
+            effettivoNum: entry.effettivo !== null ? entry.effettivo : 0
+          };
+        });
+
+        // F2 = SUM(B2:B15) -> 365 €
+        const F2 = Object.values(byRow).reduce((acc, r) => acc + r.stimaComputed, 0);
+
+        // Somma effettiva righe 2..15 -> 90 €
+        const sumC2C15 = Object.values(byRow).reduce((acc, r) => acc + r.effettivoNum, 0);
+
+        // B21 = C2+C3+B4+C6+C5+C9+C12+C14 -> 180 € nei dati originali
+        // (C5 e C12 nel foglio rappresentano le quote sicure di andrea B5 e robi B12 finché non incassate)
+        const c5Val = byRow[5].effettivo !== null ? byRow[5].effettivoNum : byRow[5].stimaComputed;
+        const c12Val = byRow[12].effettivo !== null ? byRow[12].effettivoNum : byRow[12].stimaComputed;
+        const B21 =
+          byRow[2].effettivoNum +
+          byRow[3].effettivoNum +
+          byRow[4].stimaComputed +
+          byRow[6].effettivoNum +
+          c5Val +
+          byRow[9].effettivoNum +
+          c12Val +
+          byRow[14].effettivoNum;
+
+        // B23 = F2 - B21 -> 185 €
+        const B23 = F2 - B21;
+
+        // C23 = B10+B7+B8+B15+B11+B13 -> 185 € (quota residua non ancora pagata tra DARE/DARÀ)
+        const c23Rows = [10, 7, 8, 15, 11, 13];
+        const C23 = c23Rows.reduce((acc, rNum) => {
+          const item = byRow[rNum];
+          if (item.stato === "Pagato") return acc;
+          const res = Math.max(0, item.stimaComputed - item.effettivoNum);
+          return acc + res;
+        }, 0);
+
+        // G2 = SUM(C2:C34) -> somma effettivi C2:C15 + C23 = 90 + 185 = 275 €
+        const G2 = sumC2C15 + C23;
+
+        // B27 = 365 - 120 -> 245 €
+        const B27 = 365 - 120;
+
+        return {
+          byRow,
+          F2,
+          sumC2C15,
+          B21,
+          B23,
+          C23,
+          G2,
+          B27
+        };
+      }
+
+      /**
+       * Mostra una notifica o richiesta di conferma non bloccante
+       */
+      function showToast(htmlContent, isWarning = false, autoHideMs = 3200) {
+        const bar = document.getElementById("toastBar");
+        if (toastTimeout) {
+          clearTimeout(toastTimeout);
+          toastTimeout = null;
+        }
+        bar.innerHTML = `<div class="toast-content ${isWarning ? "warning" : ""}">${htmlContent}</div>`;
+        bar.classList.add("visible");
+
+        if (autoHideMs > 0) {
+          toastTimeout = setTimeout(() => {
+            bar.classList.remove("visible");
+          }, autoHideMs);
+        }
+      }
+
+      function hideToast() {
+        const bar = document.getElementById("toastBar");
+        bar.classList.remove("visible");
+      }
+
+      /**
+       * Classe CSS per i badge di stato
+       */
+      function getStatoCssClass(stato) {
+        if (stato === "Pagato") return "stato-Pagato";
+        if (stato === "DARE") return "stato-DARE";
+        if (stato === "DARA'") return "stato-DARA";
+        if (stato === "rit") return "stato-rit";
+        return "";
+      }
+
+      /**
+       * Aggiorna tutti i KPI, i filtri, la tabella, le voci extra e la griglia Excel
+       */
+      function renderAll() {
+        const calc = computeWorkbook();
+
+        // 1. Aggiorna KPI Cards
+        document.getElementById("kpiTotaleStima").textContent = formatEuro(calc.F2);
+        document.getElementById("kpiEffettivoRaccolto").textContent = formatEuro(calc.sumC2C15);
+        document.getElementById("kpiG2Note").textContent = `Excel G2 = SUM(C2:C34) = ${formatEuro(calc.G2)}`;
+
+        const pct = calc.F2 > 0 ? Math.min(100, Math.max(0, (calc.sumC2C15 / calc.F2) * 100)) : 0;
+        document.getElementById("kpiProgressFill").style.width = `${pct.toFixed(1)}%`;
+
+        document.getElementById("kpiSicuroAnticipo").textContent = formatEuro(calc.B21);
+        document.getElementById("kpiRimanente").textContent = formatEuro(calc.B23);
+        document.getElementById("kpiRimanenteSub").textContent =
+          `Diff. F2-B21: ${formatEuro(calc.B23)} • DARE/DARÀ: ${formatEuro(calc.C23)}`;
+
+        // 2. Aggiorna conteggi nei pulsanti filtro
+        const counts = {
+          ALL: state.entries.length,
+          Pagato: state.entries.filter((e) => e.stato === "Pagato").length,
+          DARE: state.entries.filter((e) => e.stato === "DARE").length,
+          "DARA'": state.entries.filter((e) => e.stato === "DARA'").length,
+          rit: state.entries.filter((e) => e.stato === "rit").length
+        };
+
+        document.querySelectorAll("#filterPills .filter-pill").forEach((btn) => {
+          const f = btn.getAttribute("data-filter");
+          const labelMap = {
+            ALL: "Tutti",
+            Pagato: "Pagati",
+            DARE: "DARE",
+            "DARA'": "DARÀ",
+            rit: "rit"
+          };
+          btn.textContent = `${labelMap[f]} (${counts[f]})`;
+          btn.classList.toggle("active", statusFilter === f);
+        });
+
+        // 3. Render Tabella Partecipanti
+        renderParticipantsTable(calc);
+
+        // 4. Aggiorna Voci Extra e Formule (Righe 18-27)
+        const inputLibro = document.getElementById("inputLibro");
+        if (document.activeElement !== inputLibro) {
+          inputLibro.value = state.libro;
+        }
+        document.getElementById("libroEffectHint").textContent =
+          `Aggiorna Attilio (B4): =60-B18+10 = ${formatEuro(calc.byRow[4].stimaComputed)}`;
+        document.getElementById("boxB21Val").textContent = formatEuro(calc.B21);
+        document.getElementById("boxB23Val").textContent = formatEuro(calc.B23);
+        document.getElementById("boxC23Val").textContent = formatEuro(calc.C23);
+        document.getElementById("boxG2Val").textContent = formatEuro(calc.G2);
+        document.getElementById("boxB27Val").textContent = formatEuro(calc.B27);
+
+        // 5. Render Griglia Excel 27x12
+        renderExcelGrid(calc);
+      }
+
+      /**
+       * Costruisce le righe della tabella interattiva
+       */
+      function renderParticipantsTable(calc) {
+        const tbody = document.getElementById("participantsTbody");
+        const q = searchQuery.trim().toLowerCase();
+
+        const filtered = state.entries.filter((entry) => {
+          if (statusFilter !== "ALL" && entry.stato !== statusFilter) {
+            return false;
+          }
+          if (!q) return true;
+          const matchMain = entry.name.toLowerCase().includes(q);
+          const matchSub = entry.subMembers.some((m) => m.toLowerCase().includes(q));
+          return matchMain || matchSub;
+        });
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="empty-state">
+                Nessun partecipante trovato con i filtri selezionati.
+              </td>
+            </tr>
+          `;
+          document.getElementById("tfootStima").textContent = "0 €";
+          document.getElementById("tfootEffettivo").textContent = "0 €";
+          document.getElementById("tfootCount").textContent = "0 voci visualizzate";
+          return;
+        }
+
+        let filteredStima = 0;
+        let filteredEff = 0;
+
+        const rowsHtml = filtered
+          .map((entry) => {
+            const rowCalc = calc.byRow[entry.row];
+            filteredStima += rowCalc.stimaComputed;
+            filteredEff += rowCalc.effettivoNum;
+
+            const isGroup = entry.subMembers.length > 0;
+            const subHtml = isGroup
+              ? `<div class="submembers-list">
+                  ${entry.subMembers
+                    .map((member) => {
+                      const isMatch = q && member.toLowerCase().includes(q);
+                      return `<span class="submember-chip ${isMatch ? "highlight" : ""}">${escapeHtml(member)}</span>`;
+                    })
+                    .join("")}
+                </div>`
+              : "";
+
+            const formulaHtml = entry.stimaFormula
+              ? `<div><span class="formula-hint mono">${escapeHtml(entry.stimaFormula)}</span></div>`
+              : "";
+
+            const noteText = isGroup
+              ? `Gruppo (${entry.subMembers.length} membri: E${entry.row}:I${entry.row})`
+              : entry.stato === "Pagato"
+              ? "Quota saldata"
+              : "Quota individuale";
+
+            const effValueAttr = entry.effettivo !== null ? entry.effettivo : "";
+
+            return `
+              <tr class="${isGroup ? "row-group" : ""}">
+                <td class="text-center"><span class="row-idx mono">${entry.row}</span></td>
+                <td>
+                  <div class="person-name">
+                    <span>${escapeHtml(entry.name)}</span>
+                    ${isGroup ? `<span class="group-badge">Gruppo</span>` : ""}
+                  </div>
+                  ${subHtml}
+                </td>
+                <td class="text-right">
+                  <div class="stima-amount num">${formatEuro(rowCalc.stimaComputed)}</div>
+                  ${formulaHtml}
+                </td>
+                <td class="text-right">
+                  <div class="effettivo-wrap">
+                    <input
+                      type="number"
+                      class="effettivo-input num"
+                      data-row="${entry.row}"
+                      min="0"
+                      step="1"
+                      placeholder="—"
+                      value="${effValueAttr}"
+                      aria-label="Effettivo raccolto per ${escapeHtml(entry.name)}"
+                    />
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">€</span>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <select
+                    class="stato-select ${getStatoCssClass(entry.stato)}"
+                    data-row="${entry.row}"
+                    aria-label="Stato quota per ${escapeHtml(entry.name)}"
+                  >
+                    <option value="Pagato" ${entry.stato === "Pagato" ? "selected" : ""}>Pagato</option>
+                    <option value="DARE" ${entry.stato === "DARE" ? "selected" : ""}>DARE</option>
+                    <option value="DARA'" ${entry.stato === "DARA'" ? "selected" : ""}>DARÀ</option>
+                    <option value="rit" ${entry.stato === "rit" ? "selected" : ""}>rit</option>
+                  </select>
+                </td>
+                <td style="font-size: 0.82rem; color: var(--text-secondary);">${noteText}</td>
+              </tr>
+            `;
+          })
+          .join("");
+
+        tbody.innerHTML = rowsHtml;
+
+        document.getElementById("tfootStima").textContent = formatEuro(filteredStima);
+        document.getElementById("tfootEffettivo").textContent = formatEuro(filteredEff);
+        document.getElementById("tfootCount").textContent =
+          `${filtered.length} di ${state.entries.length} voci visualizzate`;
+      }
+
+      /**
+       * Costruisce la matrice esatta 27 righe x 12 colonne (A..L) di Foglio1
+       */
+      function buildExcelMatrix(calc) {
+        const COLS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+        const TOTAL_ROWS = 27;
+
+        // Mappa celle: key = "A1", value = { value, formula, type, bold, stato }
+        const cells = {};
+
+        function setCell(coord, obj) {
+          cells[coord] = obj;
+        }
+
+        // Riga 1: Intestazioni
+        setCell("A1", { value: "NOMI", isHeader: true });
+        setCell("B1", { value: "STIMA", isHeader: true });
+        setCell("C1", { value: "EFFETTIVO", isHeader: true });
+        setCell("D1", { value: "STATO", isHeader: true });
+        setCell("E1", { value: "GRUPPO", isHeader: true });
+        setCell("F1", { value: "TOT STIMA", isHeader: true });
+        setCell("G1", { value: "TOT FOGLIO", isHeader: true });
+
+        // Righe 2..15: I 14 partecipanti
+        state.entries.forEach((entry) => {
+          const r = entry.row;
+          const rowCalc = calc.byRow[r];
+
+          setCell(`A${r}`, { value: entry.name });
+          setCell(`B${r}`, {
+            value: rowCalc.stimaComputed,
+            formula: entry.stimaFormula,
+            isNum: true
+          });
+          if (entry.effettivo !== null) {
+            setCell(`C${r}`, {
+              value: entry.effettivo,
+              isNum: true
+            });
+          }
+          setCell(`D${r}`, {
+            value: entry.stato,
+            stato: entry.stato
+          });
+
+          // Sotto-membri gruppo nelle colonne E..I
+          entry.subMembers.forEach((member, idx) => {
+            const colLetter = COLS[4 + idx]; // E, F, G, H, I
+            if (colLetter) {
+              setCell(`${colLetter}${r}`, { value: member });
+            }
+          });
+        });
+
+        // F2 e G2
+        setCell("F2", {
+          value: calc.F2,
+          formula: "=SUM(B2:B15)",
+          isNum: true,
+          bold: true
+        });
+        setCell("G2", {
+          value: calc.G2,
+          formula: "=SUM(C2:C34)",
+          isNum: true,
+          bold: true
+        });
+
+        // Riga 18: libro
+        setCell("A18", { value: "libro", bold: true });
+        setCell("B18", { value: state.libro, isNum: true, bold: true });
+
+        // Riga 21: SICURO ANTICIPO
+        setCell("A21", { value: "SICURO ANTICIPO", bold: true });
+        setCell("B21", {
+          value: calc.B21,
+          formula: "=C2+C3+B4+C6+C5+C9+C12+C14",
+          isNum: true,
+          bold: true
+        });
+
+        // Riga 23: Differenza F2 - B21 (B23) e Somma DARE/DARÀ (C23)
+        setCell("A23", { value: "RIMANENTE", bold: true });
+        setCell("B23", {
+          value: calc.B23,
+          formula: "=F2-B21",
+          isNum: true,
+          bold: true
+        });
+        setCell("C23", {
+          value: calc.C23,
+          formula: "=B10+B7+B8+B15+B11+B13",
+          isNum: true,
+          bold: true
+        });
+
+        // Riga 27: Calcolo B27
+        setCell("A27", { value: "NETTO (365-120)", bold: true });
+        setCell("B27", {
+          value: calc.B27,
+          formula: "=365-120",
+          isNum: true,
+          bold: true
+        });
+
+        return { COLS, TOTAL_ROWS, cells };
+      }
+
+      /**
+       * Renderizza la griglia Excel 27x12 nella seconda tab
+       */
+      function renderExcelGrid(calc) {
+        const table = document.getElementById("excelGridTable");
+        const { COLS, TOTAL_ROWS, cells } = buildExcelMatrix(calc);
+
+        let html = "<thead><tr><th class='corner-hdr'></th>";
+        COLS.forEach((c) => {
+          html += `<th class="col-hdr">${c}</th>`;
+        });
+        html += "</tr></thead><tbody>";
+
+        for (let r = 1; r <= TOTAL_ROWS; r++) {
+          html += `<tr><td class="row-hdr num">${r}</td>`;
+          COLS.forEach((c) => {
+            const coord = `${c}${r}`;
+            const cell = cells[coord];
+            const classes = ["xl-cell"];
+            if (coord === selectedExcelCell) classes.push("selected");
+
+            let displayVal = "";
+            if (cell) {
+              if (cell.isHeader) classes.push("xl-header-row");
+              if (cell.bold) classes.push("xl-bold");
+              if (cell.stato) {
+                const sKey = cell.stato === "DARA'" ? "DARA" : cell.stato;
+                classes.push(`xl-stato-${sKey}`);
+              }
+
+              if (cell.formula) {
+                classes.push("xl-formula");
+                if (showRawFormulas) {
+                  classes.push("xl-formula-raw");
+                  displayVal = escapeHtml(cell.formula);
+                } else {
+                  if (cell.isNum) classes.push("xl-num");
+                  displayVal = escapeHtml(String(cell.value));
+                }
+              } else {
+                if (cell.isNum) classes.push("xl-num");
+                displayVal = cell.value !== undefined && cell.value !== null ? escapeHtml(String(cell.value)) : "";
+              }
+            }
+
+            html += `<td class="${classes.join(" ")}" data-coord="${coord}">${displayVal}</td>`;
+          });
+          html += "</tr>";
+        }
+
+        html += "</tbody>";
+        table.innerHTML = html;
+
+        // Aggiorna barra formula in alto
+        updateFormulaBar(cells);
+      }
+
+      function updateFormulaBar(cells) {
+        const coordEl = document.getElementById("fbCoord");
+        const contentEl = document.getElementById("fbContent");
+        coordEl.textContent = selectedExcelCell;
+
+        const cell = cells[selectedExcelCell];
+        if (!cell) {
+          contentEl.textContent = "(cella vuota)";
+          return;
+        }
+        if (cell.formula) {
+          contentEl.textContent = `${cell.formula}   →   Valore calcolato: ${cell.value}`;
+        } else {
+          contentEl.textContent = String(cell.value);
+        }
+      }
+
+      /**
+       * Esporta CSV compatibile con Excel italiano (separatore ;)
+       */
+      function exportCsv() {
+        const calc = computeWorkbook();
+        const lines = [
+          ["Riga", "Nome", "Stima (€)", "Effettivo (€)", "Stato", "Membri Gruppo", "Formula"].join(";")
+        ];
+
+        state.entries.forEach((entry) => {
+          const rc = calc.byRow[entry.row];
+          lines.push(
+            [
+              entry.row,
+              `"${entry.name}"`,
+              rc.stimaComputed,
+              entry.effettivo !== null ? entry.effettivo : "",
+              `"${entry.stato}"`,
+              `"${entry.subMembers.join(", ")}"`,
+              `"${entry.stimaFormula || ""}"`
+            ].join(";")
+          );
+        });
+
+        lines.push("");
+        lines.push(["F2", "Totale Stima", calc.F2, "", "", "", "=SUM(B2:B15)"].join(";"));
+        lines.push(["C2:C15", "Effettivo Raccolto", "", calc.sumC2C15, "", "", ""].join(";"));
+        lines.push(["G2", "Totale Foglio", "", calc.G2, "", "", "=SUM(C2:C34)"].join(";"));
+        lines.push(["B18", "libro", state.libro, "", "", "", ""].join(";"));
+        lines.push(["B21", "SICURO ANTICIPO", calc.B21, "", "", "", "=C2+C3+B4+C6+C5+C9+C12+C14"].join(";"));
+        lines.push(["B23", "Differenza F2 - B21", calc.B23, "", "", "", "=F2-B21"].join(";"));
+        lines.push(["C23", "Somma DARE/DARA'", calc.C23, "", "", "", "=B10+B7+B8+B15+B11+B13"].join(";"));
+        lines.push(["B27", "Calcolo B27", calc.B27, "", "", "", "=365-120"].join(";"));
+
+        const csvContent = "\uFEFF" + lines.join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "regalstef_riepilogo.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast(`<span>File <strong>regalstef_riepilogo.csv</strong> esportato correttamente.</span>`, false, 3000);
+      }
+
+      /**
+       * Escape HTML di sicurezza
+       */
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      /**
+       * Collegamento eventi UI
+       */
+      function bindEvents() {
+        // Cambio Tab
+        const tabBtnInteractive = document.getElementById("tabBtnInteractive");
+        const tabBtnExcel = document.getElementById("tabBtnExcel");
+        const panelInteractive = document.getElementById("panelInteractive");
+        const panelExcel = document.getElementById("panelExcel");
+
+        function switchTab(target) {
+          activeTab = target;
+          const isInt = target === "interactive";
+          tabBtnInteractive.classList.toggle("active", isInt);
+          tabBtnInteractive.setAttribute("aria-selected", String(isInt));
+          panelInteractive.classList.toggle("active", isInt);
+
+          tabBtnExcel.classList.toggle("active", !isInt);
+          tabBtnExcel.setAttribute("aria-selected", String(!isInt));
+          panelExcel.classList.toggle("active", !isInt);
+        }
+
+        tabBtnInteractive.addEventListener("click", () => switchTab("interactive"));
+        tabBtnExcel.addEventListener("click", () => switchTab("excel"));
+
+        // Ricerca
+        const searchInput = document.getElementById("searchInput");
+        const searchClear = document.getElementById("searchClear");
+
+        searchInput.addEventListener("input", (e) => {
+          searchQuery = e.target.value;
+          searchClear.classList.toggle("visible", searchQuery.length > 0);
+          renderAll();
+        });
+
+        searchClear.addEventListener("click", () => {
+          searchQuery = "";
+          searchInput.value = "";
+          searchClear.classList.remove("visible");
+          searchInput.focus();
+          renderAll();
+        });
+
+        // Filtri Stato
+        document.getElementById("filterPills").addEventListener("click", (e) => {
+          const btn = e.target.closest(".filter-pill");
+          if (!btn) return;
+          statusFilter = btn.getAttribute("data-filter");
+          renderAll();
+        });
+
+        // Modifica Effettivo & Stato nella tabella (delegazione eventi)
+        const tbody = document.getElementById("participantsTbody");
+
+        tbody.addEventListener("input", (e) => {
+          const input = e.target.closest(".effettivo-input");
+          if (!input) return;
+          const rowNum = Number(input.getAttribute("data-row"));
+          const entry = state.entries.find((item) => item.row === rowNum);
+          if (!entry) return;
+
+          const valStr = input.value.trim();
+          if (valStr === "") {
+            entry.effettivo = null;
+          } else {
+            const parsed = Number(valStr);
+            entry.effettivo = !isNaN(parsed) && parsed >= 0 ? parsed : 0;
+          }
+          saveState();
+          // Aggiorna KPI, footer e griglia senza perdere il focus sull'input corrente
+          const calc = computeWorkbook();
+          document.getElementById("kpiTotaleStima").textContent = formatEuro(calc.F2);
+          document.getElementById("kpiEffettivoRaccolto").textContent = formatEuro(calc.sumC2C15);
+          document.getElementById("kpiG2Note").textContent = `Excel G2 = SUM(C2:C34) = ${formatEuro(calc.G2)}`;
+          const pct = calc.F2 > 0 ? Math.min(100, Math.max(0, (calc.sumC2C15 / calc.F2) * 100)) : 0;
+          document.getElementById("kpiProgressFill").style.width = `${pct.toFixed(1)}%`;
+          document.getElementById("kpiSicuroAnticipo").textContent = formatEuro(calc.B21);
+          document.getElementById("kpiRimanente").textContent = formatEuro(calc.B23);
+          document.getElementById("kpiRimanenteSub").textContent =
+            `Diff. F2-B21: ${formatEuro(calc.B23)} • DARE/DARÀ: ${formatEuro(calc.C23)}`;
+          document.getElementById("boxB21Val").textContent = formatEuro(calc.B21);
+          document.getElementById("boxB23Val").textContent = formatEuro(calc.B23);
+          document.getElementById("boxC23Val").textContent = formatEuro(calc.C23);
+          document.getElementById("boxG2Val").textContent = formatEuro(calc.G2);
+
+          // Ricalcola somma righe visibili nel tfoot
+          const q = searchQuery.trim().toLowerCase();
+          let filteredEff = 0;
+          state.entries.forEach((en) => {
+            if (statusFilter !== "ALL" && en.stato !== statusFilter) return;
+            if (q && !en.name.toLowerCase().includes(q) && !en.subMembers.some((m) => m.toLowerCase().includes(q))) return;
+            filteredEff += calc.byRow[en.row].effettivoNum;
+          });
+          document.getElementById("tfootEffettivo").textContent = formatEuro(filteredEff);
+          renderExcelGrid(calc);
+        });
+
+        tbody.addEventListener("change", (e) => {
+          const select = e.target.closest(".stato-select");
+          if (!select) return;
+          const rowNum = Number(select.getAttribute("data-row"));
+          const entry = state.entries.find((item) => item.row === rowNum);
+          if (!entry) return;
+
+          entry.stato = select.value;
+          saveState();
+          renderAll();
+        });
+
+        // Modifica voce extra "libro" (B18)
+        const inputLibro = document.getElementById("inputLibro");
+        inputLibro.addEventListener("input", (e) => {
+          const val = Number(e.target.value);
+          state.libro = !isNaN(val) && val >= 0 ? val : 0;
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById("btnLibroMinus").addEventListener("click", () => {
+          state.libro = Math.max(0, state.libro - 5);
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById("btnLibroPlus").addEventListener("click", () => {
+          state.libro = state.libro + 5;
+          saveState();
+          renderAll();
+        });
+
+        // Toggle Mostra Formule nella Griglia Excel
+        const btnToggleFormulas = document.getElementById("btnToggleFormulas");
+        const toggleFormulasLabel = document.getElementById("toggleFormulasLabel");
+        btnToggleFormulas.addEventListener("click", () => {
+          showRawFormulas = !showRawFormulas;
+          btnToggleFormulas.classList.toggle("active", showRawFormulas);
+          btnToggleFormulas.setAttribute("aria-pressed", String(showRawFormulas));
+          toggleFormulasLabel.textContent = showRawFormulas ? "Mostra Valori Calcolati" : "Mostra Formule (=fx)";
+          renderExcelGrid(computeWorkbook());
+        });
+
+        // Selezione cella nella Griglia Excel
+        document.getElementById("excelGridTable").addEventListener("click", (e) => {
+          const td = e.target.closest("td.xl-cell");
+          if (!td) return;
+          selectedExcelCell = td.getAttribute("data-coord");
+          renderExcelGrid(computeWorkbook());
+        });
+
+        // Esporta CSV
+        document.getElementById("btnExportCsv").addEventListener("click", exportCsv);
+
+        // Ripristina Dati Originali (con conferma inline)
+        document.getElementById("btnResetAsk").addEventListener("click", () => {
+          showToast(
+            `<span>Vuoi ripristinare tutti i valori originali di <strong>regalstef.xlsx</strong>? Le modifiche locali andranno perse.</span>
+             <div class="toast-actions">
+               <button type="button" id="btnConfirmReset" class="btn btn-sm btn-danger">Sì, ripristina</button>
+               <button type="button" id="btnCancelReset" class="btn btn-sm btn-neutral">Annulla</button>
+             </div>`,
+            true,
+            0
+          );
+
+          document.getElementById("btnConfirmReset").addEventListener("click", () => {
+            state = getFreshDefaultState();
+            saveState();
+            searchQuery = "";
+            searchInput.value = "";
+            searchClear.classList.remove("visible");
+            statusFilter = "ALL";
+            renderAll();
+            showToast(`<span>Dati originali di <strong>regalstef.xlsx</strong> ripristinati.</span>`, false, 3000);
+          });
+
+  </script>
+</body>
+</html>
