@@ -1,36 +1,30 @@
-document.getElementById("btnCancelReset").addEventListener("click", hideToast);
-        });
-      }
-
-      // Avvio applicazione
-      bindEvents();
-      renderAll();
-    })();<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Regali Stefano - Riepilogo Quote (regalstef.xlsx)</title>
+  <title>Regalo Stef — Gestione Quote (regalstef.xlsx)</title>
   <style>
     /* ==========================================================================
-       DESIGN TOKENS & RESET (Zero dipendenze esterne, pronto per GitHub Pages)
+       DESIGN TOKENS & RESET (100% Autonomo: zero CDN o librerie esterne)
        ========================================================================== */
     :root {
-      --bg-page: #f4f7f5;
+      --bg-page: #f1f5f3;
       --bg-surface: #ffffff;
       --bg-subtle: #f8fafc;
-      --bg-excel-header: #eef2f0;
+      --bg-excel-hdr: #eef2f0;
       --excel-green: #107c41;
       --excel-green-dark: #0b5c30;
       --excel-green-light: #e7f5ee;
       --excel-green-border: #b7dec9;
+      --slate-dark: #1e293b;
       --text-primary: #0f172a;
       --text-secondary: #475569;
       --text-muted: #64748b;
       --border-color: #dbe3df;
       --border-grid: #cbd5e1;
 
-      /* Colori stati */
+      /* Colori di stato */
       --stato-pagato-bg: #dcfce7;
       --stato-pagato-text: #166534;
       --stato-pagato-border: #86efac;
@@ -48,7 +42,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       --stato-rit-border: #a5b4fc;
 
       --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 14px;
@@ -69,7 +63,6 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Numeri allineati perfettamente nelle tabelle e nei totali */
     .num {
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum";
@@ -80,17 +73,17 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     /* ==========================================================================
-       HEADER PRINCIPALE
+       BARRA SUPERIORE (HEADER)
        ========================================================================== */
     .app-header {
-      background: linear-gradient(135deg, #0e6b38 0%, #107c41 55%, #16924e 100%);
+      background: linear-gradient(135deg, #0b5c30 0%, #107c41 55%, #15803d 100%);
       color: #ffffff;
       padding: 18px 20px;
-      box-shadow: 0 2px 10px rgba(11, 92, 48, 0.2);
+      box-shadow: 0 2px 10px rgba(11, 92, 48, 0.22);
     }
 
     .header-inner {
-      max-width: 1240px;
+      max-width: 1260px;
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
@@ -106,10 +99,10 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     .brand-icon {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       background: rgba(255, 255, 255, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: var(--radius-md);
       display: flex;
       align-items: center;
@@ -131,12 +124,12 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       gap: 8px;
       margin-top: 3px;
       font-size: 0.82rem;
-      color: rgba(255, 255, 255, 0.88);
+      color: rgba(255, 255, 255, 0.9);
     }
 
     .file-pill {
-      background: rgba(0, 0, 0, 0.22);
-      padding: 2px 8px;
+      background: rgba(0, 0, 0, 0.24);
+      padding: 2px 9px;
       border-radius: 999px;
       font-size: 0.76rem;
       font-weight: 600;
@@ -159,9 +152,9 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       font-weight: 600;
       cursor: pointer;
       border: 1px solid transparent;
-      transition: all 0.15s ease;
-      text-decoration: none;
+      transition: background-color 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
       min-height: 38px;
+      user-select: none;
     }
 
     .btn:active {
@@ -179,20 +172,20 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     .btn-header-ghost {
-      background-color: rgba(255, 255, 255, 0.14);
+      background-color: rgba(255, 255, 255, 0.15);
       color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.28);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     .btn-header-ghost:hover {
-      background-color: rgba(255, 255, 255, 0.24);
+      background-color: rgba(255, 255, 255, 0.25);
     }
 
     /* ==========================================================================
-       BANNER DI CONFERMA / NOTIFICHE (Sostituisce alert/confirm)
+       NOTIFICHE / CONFERMA INLINE (Sostituisce alert e confirm)
        ========================================================================== */
     .toast-bar {
-      max-width: 1240px;
+      max-width: 1260px;
       margin: 14px auto 0;
       padding: 0 16px;
       display: none;
@@ -252,12 +245,12 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     /* ==========================================================================
-       CONTAINER & NAVIGAZIONE TAB
+       CONTENITORE PRINCIPALE E SCHEDE (TABS)
        ========================================================================== */
     .main-container {
-      max-width: 1240px;
+      max-width: 1260px;
       margin: 0 auto;
-      padding: 18px 16px 44px;
+      padding: 18px 16px 48px;
     }
 
     .tabs-bar {
@@ -305,7 +298,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     /* ==========================================================================
-       KPI CARDS (4 SCHEDE RIEPILOGO)
+       4 CARD KPI
        ========================================================================== */
     .kpi-grid {
       display: grid;
@@ -349,12 +342,12 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       background: var(--excel-green);
     }
 
-    .kpi-card.kpi-amber::before {
-      background: #d97706;
+    .kpi-card.kpi-slate::before {
+      background: #334155;
     }
 
-    .kpi-card.kpi-blue::before {
-      background: #0284c7;
+    .kpi-card.kpi-amber::before {
+      background: #d97706;
     }
 
     .kpi-header {
@@ -366,7 +359,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     .kpi-title {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
@@ -413,7 +406,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     /* ==========================================================================
-       BARRA RICERCA E FILTRI
+       BARRA RICERCA E FILTRI RAPIDI
        ========================================================================== */
     .controls-card {
       background: var(--bg-surface);
@@ -432,7 +425,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     .search-box {
       position: relative;
       flex: 1 1 260px;
-      max-width: 420px;
+      max-width: 440px;
     }
 
     .search-icon {
@@ -504,13 +497,13 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     .filter-pill.active {
-      background: var(--excel-green-dark);
+      background: var(--slate-dark);
       color: #ffffff;
-      border-color: var(--excel-green-dark);
+      border-color: var(--slate-dark);
     }
 
     /* ==========================================================================
-       TABELLA PARTECIPANTI (RIGHE 2-15)
+       TABELLA INTERATTIVA PARTECIPANTI (RIGHE 2–15)
        ========================================================================== */
     .table-card {
       background: var(--bg-surface);
@@ -530,11 +523,11 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     table.data-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 680px;
+      min-width: 740px;
     }
 
     .data-table th {
-      background: var(--bg-excel-header);
+      background: var(--bg-excel-hdr);
       color: var(--text-secondary);
       font-size: 0.78rem;
       font-weight: 700;
@@ -597,7 +590,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       background: var(--excel-green-light);
       color: var(--excel-green-dark);
       border: 1px solid var(--excel-green-border);
-      padding: 1px 6px;
+      padding: 1px 7px;
       border-radius: 999px;
     }
 
@@ -641,7 +634,6 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       border-radius: 4px;
     }
 
-    /* Input Effettivo editabile */
     .effettivo-wrap {
       display: inline-flex;
       align-items: center;
@@ -673,7 +665,6 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       font-weight: 400;
     }
 
-    /* Select Stato colorato */
     .stato-select {
       padding: 6px 10px;
       border-radius: 999px;
@@ -714,8 +705,36 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       border-color: var(--stato-rit-border);
     }
 
+    .btn-pay-quick {
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--excel-green-border);
+      background: var(--excel-green-light);
+      color: var(--excel-green-dark);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-pay-quick:hover {
+      background: var(--excel-green);
+      color: #ffffff;
+      border-color: var(--excel-green);
+    }
+
+    .paid-check-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.79rem;
+      font-weight: 600;
+      color: var(--stato-pagato-text);
+    }
+
     .data-table tfoot td {
-      background: var(--bg-excel-header);
+      background: var(--bg-excel-hdr);
       font-weight: 800;
       border-top: 2px solid var(--border-color);
       padding: 12px 14px;
@@ -728,7 +747,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     /* ==========================================================================
-       SEZIONE VOCI EXTRA E FORMULE DEL FOGLIO (RIGHE 18-27)
+       SEZIONE VOCI EXTRA E FORMULE EXCEL (RIGHE 18–27)
        ========================================================================== */
     .section-card {
       background: var(--bg-surface);
@@ -845,7 +864,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     /* ==========================================================================
-       TAB 2: GRIGLIA EXCEL (FOGLIO1 - 27 RIGHE x 12 COLONNE A..L)
+       TAB 2: GRIGLIA EXCEL (FOGLIO1 — 27 RIGHE x 12 COLONNE A–L)
        ========================================================================== */
     .excel-toolbar {
       background: var(--bg-surface);
@@ -872,7 +891,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     .fb-coord {
-      background: var(--bg-excel-header);
+      background: var(--bg-excel-hdr);
       border-right: 1px solid var(--border-grid);
       padding: 6px 12px;
       font-weight: 700;
@@ -929,7 +948,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
 
     .excel-grid th.col-hdr,
     .excel-grid th.corner-hdr {
-      background: var(--bg-excel-header);
+      background: var(--bg-excel-hdr);
       color: #334155;
       font-weight: 700;
       text-align: center;
@@ -945,7 +964,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     .excel-grid td.row-hdr {
-      background: var(--bg-excel-header);
+      background: var(--bg-excel-hdr);
       color: #334155;
       font-weight: 700;
       text-align: center;
@@ -978,6 +997,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       font-weight: 700;
       background-color: #f8fafc;
       color: #0f172a;
+      text-align: center;
     }
 
     .excel-grid td.xl-num {
@@ -1002,13 +1022,6 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
       font-weight: 700;
     }
 
-    .excel-grid td.xl-stato-Pagato {
-      background-color: #dcfce7;
-      color: #166534;
-      font-weight: 700;
-      text-align: center;
-    }
-
     .excel-grid td.xl-stato-DARE {
       background-color: #fee2e2;
       color: #991b1b;
@@ -1031,7 +1044,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     }
 
     .sheet-tab-footer {
-      background: var(--bg-excel-header);
+      background: var(--bg-excel-hdr);
       border-top: 1px solid var(--border-grid);
       padding: 6px 14px;
       display: flex;
@@ -1061,13 +1074,12 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
 </head>
 <body>
   <!-- ========================================================================
-       HEADER APPLICAZIONE
+       BARRA SUPERIORE
        ======================================================================== -->
   <header class="app-header">
     <div class="header-inner">
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">
-          <!-- Icona foglio di calcolo Excel SVG inline -->
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="3" y1="9" x2="21" y2="9"></line>
@@ -1077,16 +1089,16 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           </svg>
         </div>
         <div>
-          <h1>Regali Stefano - Riepilogo Quote</h1>
+          <h1>Regalo Stef — Gestione Quote</h1>
           <div class="brand-sub">
             <span class="file-pill">regalstef.xlsx • Foglio1</span>
-            <span>Salvataggio automatico nel browser</span>
+            <span>Salvataggio locale automatico</span>
           </div>
         </div>
       </div>
 
       <div class="header-actions">
-        <button type="button" id="btnExportCsv" class="btn btn-header-primary" title="Scarica il riepilogo aggiornato in formato CSV per Excel">
+        <button type="button" id="btnExportCsv" class="btn btn-header-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="7 10 12 15 17 10"></polyline>
@@ -1094,7 +1106,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           </svg>
           Esporta CSV
         </button>
-        <button type="button" id="btnResetAsk" class="btn btn-header-ghost" title="Ripristina i valori originali del file Excel">
+        <button type="button" id="btnResetAsk" class="btn btn-header-ghost">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="1 4 1 10 7 10"></polyline>
             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
@@ -1105,14 +1117,14 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     </div>
   </header>
 
-  <!-- Banner notifiche / conferma ripristino (senza alert o confirm) -->
+  <!-- Banner notifiche / conferma ripristino -->
   <div id="toastBar" class="toast-bar" role="status" aria-live="polite"></div>
 
   <!-- ========================================================================
        CONTENUTO PRINCIPALE
        ======================================================================== -->
   <main class="main-container">
-    <!-- Barra Tab -->
+    <!-- Navigazione Schede -->
     <nav class="tabs-bar" role="tablist" aria-label="Viste del foglio Excel">
       <button type="button" role="tab" id="tabBtnInteractive" class="tab-btn active" aria-selected="true" aria-controls="panelInteractive">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1138,10 +1150,10 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     </nav>
 
     <!-- ======================================================================
-         TAB 1: RIEPILOGO INTERATTIVO
+         SCHEDA 1: RIEPILOGO INTERATTIVO
          ====================================================================== -->
     <section id="panelInteractive" class="tab-panel active" role="tabpanel" aria-labelledby="tabBtnInteractive">
-      <!-- KPI Cards -->
+      <!-- 4 Card KPI -->
       <div class="kpi-grid">
         <article class="kpi-card">
           <div>
@@ -1154,7 +1166,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           <div class="kpi-sub mono">=SUM(B2:B15)</div>
         </article>
 
-        <article class="kpi-card kpi-blue">
+        <article class="kpi-card kpi-slate">
           <div>
             <div class="kpi-header">
               <span class="kpi-title">Effettivo Raccolto</span>
@@ -1193,7 +1205,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
         </article>
       </div>
 
-      <!-- Ricerca e Filtri -->
+      <!-- Barra di Ricerca e Filtri Rapidi -->
       <div class="controls-card">
         <div class="search-box">
           <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1204,7 +1216,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
             type="text"
             id="searchInput"
             class="search-input"
-            placeholder="Cerca nome o partecipante gruppo (es. federico, valeria)..."
+            placeholder="Cerca nome o membro gruppo (es. federico, valeria)..."
             aria-label="Cerca partecipante"
           />
           <button type="button" id="searchClear" class="search-clear" title="Pulisci ricerca" aria-label="Pulisci ricerca">✕</button>
@@ -1212,41 +1224,41 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
 
         <div id="filterPills" class="filter-pills" role="group" aria-label="Filtra per stato">
           <button type="button" class="filter-pill active" data-filter="ALL">Tutti (14)</button>
-          <button type="button" class="filter-pill" data-filter="Pagato">Pagati</button>
-          <button type="button" class="filter-pill" data-filter="DARE">DARE</button>
-          <button type="button" class="filter-pill" data-filter="DARA'">DARÀ</button>
-          <button type="button" class="filter-pill" data-filter="rit">rit</button>
+          <button type="button" class="filter-pill" data-filter="Pagato">Pagati (5)</button>
+          <button type="button" class="filter-pill" data-filter="DARE">DARE (5)</button>
+          <button type="button" class="filter-pill" data-filter="DARA'">DARÀ (3)</button>
+          <button type="button" class="filter-pill" data-filter="rit">rit (1)</button>
         </div>
       </div>
 
-      <!-- Tabella Principale (Righe 2-15) -->
+      <!-- Tabella Interattiva Partecipanti (Righe 2–15) -->
       <div class="table-card">
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th class="text-center" style="width: 64px;">Riga</th>
-                <th>Partecipante / Gruppo (Col. A)</th>
+                <th class="text-center" style="width: 60px;">Riga</th>
+                <th>Partecipante / Gruppo (Col. A / H–L)</th>
                 <th class="text-right">Stima (Col. B)</th>
                 <th class="text-right">Effettivo (Col. C)</th>
                 <th class="text-center">Stato (Col. D)</th>
-                <th>Note / Formula</th>
+                <th class="text-center">Azione Rapida</th>
               </tr>
             </thead>
             <tbody id="participantsTbody"></tbody>
             <tfoot>
               <tr>
-                <td colspan="2">Totale Righe Filtrate / Foglio (B2:B15 &amp; C2:C15)</td>
+                <td colspan="2">Totale Righe Visualizzate (B2:B15 &amp; C2:C15)</td>
                 <td id="tfootStima" class="text-right num">365 €</td>
                 <td id="tfootEffettivo" class="text-right num">90 €</td>
-                <td colspan="2" id="tfootCount" style="font-weight: 600; font-size: 0.84rem; color: var(--text-secondary);">14 voci visualizzate</td>
+                <td colspan="2" id="tfootCount" style="font-weight: 600; font-size: 0.84rem; color: var(--text-secondary);">14 di 14 voci visualizzate</td>
               </tr>
             </tfoot>
           </table>
         </div>
       </div>
 
-      <!-- Sezione Voci Extra e Formule del Foglio (Righe 18-27) -->
+      <!-- Voci Extra e Formule Excel (Righe 18–27) -->
       <section class="section-card" aria-labelledby="extraFormulasTitle">
         <div class="section-header">
           <h2 id="extraFormulasTitle" class="section-title">
@@ -1254,13 +1266,13 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
               <polyline points="4 17 10 11 4 5"></polyline>
               <line x1="12" y1="19" x2="20" y2="19"></line>
             </svg>
-            Voci Extra e Formule del Foglio (Righe 18–27)
+            Voci Extra e Formule Excel (Righe 18–27)
           </h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Modificando <strong>libro (B18)</strong> la quota di Attilio (<span class="mono">B4</span>) si ricalcola automaticamente</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Modificando <strong>libro (B18)</strong> la quota di Attilio (<span class="mono">B4</span>) si aggiorna subito</span>
         </div>
 
         <div class="formulas-grid">
-          <!-- B18: libro (editabile) -->
+          <!-- B18: libro -->
           <div class="formula-box editable-box">
             <div class="formula-box-top">
               <span class="formula-label">libro</span>
@@ -1272,7 +1284,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
               <span style="font-weight: 700;">€</span>
               <button type="button" id="btnLibroPlus" class="libro-step-btn" title="Aumenta di 5 €" aria-label="Aumenta quota libro">+</button>
             </div>
-            <div id="libroEffectHint" class="formula-expr">Aggiorna Attilio (B4): =60-B18+10 = 50 €</div>
+            <div id="libroEffectHint" class="formula-expr">Attilio (B4): =60-B18+10 = 50 €</div>
           </div>
 
           <!-- B21: SICURO ANTICIPO -->
@@ -1329,14 +1341,14 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
     </section>
 
     <!-- ======================================================================
-         TAB 2: GRIGLIA EXCEL (FOGLIO1 - 27 RIGHE x 12 COLONNE A..L)
+         SCHEDA 2: GRIGLIA EXCEL (FOGLIO1 — 27 RIGHE x 12 COLONNE A–L)
          ====================================================================== -->
     <section id="panelExcel" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnExcel">
       <div class="excel-toolbar">
         <div class="formula-bar" aria-label="Barra della formula Excel">
-          <div id="fbCoord" class="fb-coord mono">F2</div>
+          <div id="fbCoord" class="fb-coord mono">B4</div>
           <div class="fb-fx">fx</div>
-          <div id="fbContent" class="fb-content mono">=SUM(B2:B15)  →  365</div>
+          <div id="fbContent" class="fb-content mono">B4: =60-B18+10 (Valore: 50)</div>
         </div>
 
         <button type="button" id="btnToggleFormulas" class="btn toggle-formulas-btn" aria-pressed="false">
@@ -1352,29 +1364,29 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
         <table id="excelGridTable" class="excel-grid" aria-label="Replica Foglio1 di regalstef.xlsx"></table>
         <div class="sheet-tab-footer">
           <span class="sheet-pill">Foglio1</span>
-          <span>27 righe × 12 colonne (A–L) • Clicca su qualsiasi cella per ispezionare valore o formula</span>
+          <span>27 righe × 12 colonne (A–L) • Clicca su qualsiasi cella per leggere valore o formula</span>
         </div>
       </div>
     </section>
 
     <p class="footer-note">
-      Replica web statica di <strong>regalstef.xlsx (Foglio1)</strong> • Compatibile con GitHub Pages e uso offline.
+      Replica web autonoma di <strong>regalstef.xlsx (Foglio1)</strong> • Compatibile con Chrome in locale e GitHub Pages.
     </p>
   </main>
 
   <!-- ========================================================================
-       LOGICA APPLICATIVA E CALCOLO FORMULE EXCEL
+       LOGICA APPLICATIVA VANILLA JS
        ======================================================================== -->
   <script>
     (function () {
       "use strict";
 
-      const STORAGE_KEY = "regalstef_xlsx_foglio1_v1";
+      var STORAGE_KEY = "regalstef_xlsx_foglio1_v2";
 
       /**
-       * Dati originali esatti estratti da regalstef.xlsx (Foglio1, righe 2..15)
+       * Dati originali esatti estratti da regalstef.xlsx (Foglio1, righe 2-15)
        */
-      const DEFAULT_ENTRIES = [
+      var DEFAULT_ENTRIES = [
         {
           row: 2,
           name: "Mirco",
@@ -1382,7 +1394,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: 20,
           stato: "Pagato",
-          subMembers: []
+          excelD: "",
+          groupCols: []
         },
         {
           row: 3,
@@ -1391,7 +1404,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: 20,
           stato: "Pagato",
-          subMembers: []
+          excelD: "",
+          groupCols: []
         },
         {
           row: 4,
@@ -1400,7 +1414,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: "=60-B18+10",
           effettivo: null,
           stato: "rit",
-          subMembers: ["federico", "matteo", "rosamaria", "alessandra", "enrico"]
+          excelD: "rit",
+          groupCols: ["federico", "matteo", "rosamaria", "alessandra", "enrico"]
         },
         {
           row: 5,
@@ -1409,7 +1424,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: null,
           stato: "DARE",
-          subMembers: []
+          excelD: "DARE",
+          groupCols: []
         },
         {
           row: 6,
@@ -1418,7 +1434,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: 20,
           stato: "Pagato",
-          subMembers: []
+          excelD: "",
+          groupCols: []
         },
         {
           row: 7,
@@ -1427,7 +1444,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: null,
           stato: "DARE",
-          subMembers: []
+          excelD: "DARE",
+          groupCols: []
         },
         {
           row: 8,
@@ -1436,7 +1454,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: null,
           stato: "DARE",
-          subMembers: []
+          excelD: "DARE",
+          groupCols: []
         },
         {
           row: 9,
@@ -1445,7 +1464,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: 20,
           stato: "Pagato",
-          subMembers: []
+          excelD: "",
+          groupCols: []
         },
         {
           row: 10,
@@ -1454,7 +1474,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: "=120-5",
           effettivo: null,
           stato: "DARA'",
-          subMembers: ["valeria", "claudio", "felicia", "angela", "marta"]
+          excelD: "DARA'",
+          groupCols: ["valeria", "claudio", "felicia", "angela", "marta"]
         },
         {
           row: 11,
@@ -1463,7 +1484,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: null,
           stato: "DARA'",
-          subMembers: []
+          excelD: "DARA'",
+          groupCols: []
         },
         {
           row: 12,
@@ -1472,7 +1494,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: null,
           stato: "DARE",
-          subMembers: []
+          excelD: "DARE",
+          groupCols: []
         },
         {
           row: 13,
@@ -1481,7 +1504,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: null,
           stato: "DARA'",
-          subMembers: []
+          excelD: "DARA'",
+          groupCols: []
         },
         {
           row: 14,
@@ -1490,7 +1514,8 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: 10,
           stato: "Pagato",
-          subMembers: []
+          excelD: "",
+          groupCols: []
         },
         {
           row: 15,
@@ -1499,111 +1524,128 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           stimaFormula: null,
           effettivo: null,
           stato: "DARE",
-          subMembers: []
+          excelD: "DARE",
+          groupCols: []
         }
       ];
 
-      /**
-       * Stato dell'applicazione
-       */
-      let state = loadState();
-      let activeTab = "interactive";
-      let searchQuery = "";
-      let statusFilter = "ALL";
-      let showRawFormulas = false;
-      let selectedExcelCell = "F2";
-      let toastTimeout = null;
-
-      /**
-       * Carica lo stato salvato in localStorage con fallback ai dati originali
-       */
-      function loadState() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed && Array.isArray(parsed.entries) && parsed.entries.length === 14) {
-              return {
-                libro: typeof parsed.libro === "number" && !isNaN(parsed.libro) ? parsed.libro : 20,
-                entries: parsed.entries.map((item, idx) => ({
-                  ...DEFAULT_ENTRIES[idx],
-                  effettivo: item.effettivo === "" || item.effettivo === null || isNaN(Number(item.effettivo))
-                    ? null
-                    : Number(item.effettivo),
-                  stato: ["Pagato", "DARE", "DARA'", "rit"].includes(item.stato)
-                    ? item.stato
-                    : DEFAULT_ENTRIES[idx].stato
-                }))
-              };
-            }
-          }
-        } catch (err) {
-          console.warn("Impossibile leggere localStorage:", err);
-        }
-        return getFreshDefaultState();
-      }
+      var state = null;
+      var searchQuery = "";
+      var statusFilter = "ALL";
+      var showRawFormulas = false;
+      var selectedExcelCell = "B4";
+      var toastTimeout = null;
 
       function getFreshDefaultState() {
         return {
           libro: 20,
-          entries: DEFAULT_ENTRIES.map((e) => ({
-            ...e,
-            subMembers: [...e.subMembers]
-          }))
+          entries: DEFAULT_ENTRIES.map(function (e) {
+            return {
+              row: e.row,
+              name: e.name,
+              stimaBase: e.stimaBase,
+              stimaFormula: e.stimaFormula,
+              effettivo: e.effettivo,
+              stato: e.stato,
+              excelD: e.excelD,
+              groupCols: e.groupCols.slice()
+            };
+          })
         };
+      }
+
+      function loadState() {
+        try {
+          var raw = window.localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.entries) && parsed.entries.length === 14) {
+              return {
+                libro: typeof parsed.libro === "number" && !isNaN(parsed.libro) ? parsed.libro : 20,
+                entries: parsed.entries.map(function (item, idx) {
+                  var def = DEFAULT_ENTRIES[idx];
+                  var validStates = ["Pagato", "DARE", "DARA'", "rit"];
+                  var st = validStates.indexOf(item.stato) !== -1 ? item.stato : def.stato;
+                  var eff =
+                    item.effettivo === "" || item.effettivo === null || isNaN(Number(item.effettivo))
+                      ? null
+                      : Number(item.effettivo);
+                  return {
+                    row: def.row,
+                    name: def.name,
+                    stimaBase: def.stimaBase,
+                    stimaFormula: def.stimaFormula,
+                    effettivo: eff,
+                    stato: st,
+                    excelD: st === "Pagato" ? "" : st,
+                    groupCols: def.groupCols.slice()
+                  };
+                })
+              };
+            }
+          }
+        } catch (e) {
+          /* Ignora errori di accesso a localStorage in modalità file:// o incognito */
+        }
+        return getFreshDefaultState();
       }
 
       function saveState() {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        } catch (err) {
-          console.warn("Impossibile salvare su localStorage:", err);
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          /* Ignora errori di scrittura su localStorage */
         }
       }
 
-      /**
-       * Formattazione numeri in Euro
-       */
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
       function formatEuro(val) {
         if (val === null || val === undefined || isNaN(val)) return "";
-        const rounded = Math.round(val * 100) / 100;
-        return Number.isInteger(rounded)
-          ? `${rounded} €`
-          : `${rounded.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+        var rounded = Math.round(val * 100) / 100;
+        if (Math.floor(rounded) === rounded) {
+          return rounded + " €";
+        }
+        return rounded.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
       }
 
       /**
-       * Calcola tutte le stime e le formule di Foglio1 in tempo reale
+       * Calcola tutte le stime e le formule di Foglio1
        */
       function computeWorkbook() {
-        const byRow = {};
-        state.entries.forEach((entry) => {
-          let stima = entry.stimaBase;
+        var byRow = {};
+        state.entries.forEach(function (entry) {
+          var stima = entry.stimaBase;
           if (entry.row === 4) {
-            // Formula =60-B18+10 (attilio)
             stima = 60 - state.libro + 10;
           } else if (entry.row === 10) {
-            // Formula =120-5 (enza)
             stima = 120 - 5;
           }
           byRow[entry.row] = {
-            ...entry,
+            entry: entry,
             stimaComputed: stima,
             effettivoNum: entry.effettivo !== null ? entry.effettivo : 0
           };
         });
 
-        // F2 = SUM(B2:B15) -> 365 €
-        const F2 = Object.values(byRow).reduce((acc, r) => acc + r.stimaComputed, 0);
+        // F2 = SUM(B2:B15) -> 365
+        var F2 = 0;
+        var sumC2C15 = 0;
+        state.entries.forEach(function (entry) {
+          F2 += byRow[entry.row].stimaComputed;
+          sumC2C15 += byRow[entry.row].effettivoNum;
+        });
 
-        // Somma effettiva righe 2..15 -> 90 €
-        const sumC2C15 = Object.values(byRow).reduce((acc, r) => acc + r.effettivoNum, 0);
-
-        // B21 = C2+C3+B4+C6+C5+C9+C12+C14 -> 180 € nei dati originali
-        // (C5 e C12 nel foglio rappresentano le quote sicure di andrea B5 e robi B12 finché non incassate)
-        const c5Val = byRow[5].effettivo !== null ? byRow[5].effettivoNum : byRow[5].stimaComputed;
-        const c12Val = byRow[12].effettivo !== null ? byRow[12].effettivoNum : byRow[12].stimaComputed;
-        const B21 =
+        // B21 = C2+C3+B4+C6+C5+C9+C12+C14 -> 180
+        var c5Val = byRow[5].entry.effettivo !== null ? byRow[5].effettivoNum : byRow[5].stimaComputed;
+        var c12Val = byRow[12].entry.effettivo !== null ? byRow[12].effettivoNum : byRow[12].stimaComputed;
+        var B21 =
           byRow[2].effettivoNum +
           byRow[3].effettivoNum +
           byRow[4].stimaComputed +
@@ -1613,63 +1655,62 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           c12Val +
           byRow[14].effettivoNum;
 
-        // B23 = F2 - B21 -> 185 €
-        const B23 = F2 - B21;
+        // B23 = F2 - B21 -> 185
+        var B23 = F2 - B21;
 
-        // C23 = B10+B7+B8+B15+B11+B13 -> 185 € (quota residua non ancora pagata tra DARE/DARÀ)
-        const c23Rows = [10, 7, 8, 15, 11, 13];
-        const C23 = c23Rows.reduce((acc, rNum) => {
-          const item = byRow[rNum];
-          if (item.stato === "Pagato") return acc;
-          const res = Math.max(0, item.stimaComputed - item.effettivoNum);
-          return acc + res;
-        }, 0);
+        // C23 = B10+B7+B8+B15+B11+B13 -> 185
+        var c23Rows = [10, 7, 8, 15, 11, 13];
+        var C23 = 0;
+        c23Rows.forEach(function (rNum) {
+          var item = byRow[rNum];
+          if (item.entry.stato !== "Pagato") {
+            C23 += Math.max(0, item.stimaComputed - item.effettivoNum);
+          }
+        });
 
-        // G2 = SUM(C2:C34) -> somma effettivi C2:C15 + C23 = 90 + 185 = 275 €
-        const G2 = sumC2C15 + C23;
+        // G2 = SUM(C2:C34) -> 90 + 185 = 275
+        var G2 = sumC2C15 + C23;
 
-        // B27 = 365 - 120 -> 245 €
-        const B27 = 365 - 120;
+        // B27 = 365 - 120 -> 245
+        var B27 = 365 - 120;
 
         return {
-          byRow,
-          F2,
-          sumC2C15,
-          B21,
-          B23,
-          C23,
-          G2,
-          B27
+          byRow: byRow,
+          F2: F2,
+          sumC2C15: sumC2C15,
+          B21: B21,
+          B23: B23,
+          C23: C23,
+          G2: G2,
+          B27: B27
         };
       }
 
-      /**
-       * Mostra una notifica o richiesta di conferma non bloccante
-       */
-      function showToast(htmlContent, isWarning = false, autoHideMs = 3200) {
-        const bar = document.getElementById("toastBar");
+      function showToast(htmlContent, isWarning, autoHideMs) {
+        var bar = document.getElementById("toastBar");
+        if (!bar) return;
         if (toastTimeout) {
           clearTimeout(toastTimeout);
           toastTimeout = null;
         }
-        bar.innerHTML = `<div class="toast-content ${isWarning ? "warning" : ""}">${htmlContent}</div>`;
+        bar.innerHTML =
+          "<div class=\"toast-content " + (isWarning ? "warning" : "") + "\">" + htmlContent + "</div>";
         bar.classList.add("visible");
 
-        if (autoHideMs > 0) {
-          toastTimeout = setTimeout(() => {
+        if (autoHideMs && autoHideMs > 0) {
+          toastTimeout = setTimeout(function () {
             bar.classList.remove("visible");
           }, autoHideMs);
         }
       }
 
       function hideToast() {
-        const bar = document.getElementById("toastBar");
-        bar.classList.remove("visible");
+        var bar = document.getElementById("toastBar");
+        if (bar) {
+          bar.classList.remove("visible");
+        }
       }
 
-      /**
-       * Classe CSS per i badge di stato
-       */
       function getStatoCssClass(stato) {
         if (stato === "Pagato") return "stato-Pagato";
         if (stato === "DARE") return "stato-DARE";
@@ -1678,175 +1719,197 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
         return "";
       }
 
-      /**
-       * Aggiorna tutti i KPI, i filtri, la tabella, le voci extra e la griglia Excel
-       */
-      function renderAll() {
-        const calc = computeWorkbook();
-
-        // 1. Aggiorna KPI Cards
+      function updateSummaryIndicators(calc) {
         document.getElementById("kpiTotaleStima").textContent = formatEuro(calc.F2);
         document.getElementById("kpiEffettivoRaccolto").textContent = formatEuro(calc.sumC2C15);
-        document.getElementById("kpiG2Note").textContent = `Excel G2 = SUM(C2:C34) = ${formatEuro(calc.G2)}`;
+        document.getElementById("kpiG2Note").textContent = "Excel G2 = SUM(C2:C34) = " + formatEuro(calc.G2);
 
-        const pct = calc.F2 > 0 ? Math.min(100, Math.max(0, (calc.sumC2C15 / calc.F2) * 100)) : 0;
-        document.getElementById("kpiProgressFill").style.width = `${pct.toFixed(1)}%`;
+        var pct = calc.F2 > 0 ? Math.min(100, Math.max(0, (calc.sumC2C15 / calc.F2) * 100)) : 0;
+        document.getElementById("kpiProgressFill").style.width = pct.toFixed(1) + "%";
 
         document.getElementById("kpiSicuroAnticipo").textContent = formatEuro(calc.B21);
         document.getElementById("kpiRimanente").textContent = formatEuro(calc.B23);
         document.getElementById("kpiRimanenteSub").textContent =
-          `Diff. F2-B21: ${formatEuro(calc.B23)} • DARE/DARÀ: ${formatEuro(calc.C23)}`;
+          "Diff. F2-B21: " + formatEuro(calc.B23) + " • DARE/DARÀ: " + formatEuro(calc.C23);
 
-        // 2. Aggiorna conteggi nei pulsanti filtro
-        const counts = {
-          ALL: state.entries.length,
-          Pagato: state.entries.filter((e) => e.stato === "Pagato").length,
-          DARE: state.entries.filter((e) => e.stato === "DARE").length,
-          "DARA'": state.entries.filter((e) => e.stato === "DARA'").length,
-          rit: state.entries.filter((e) => e.stato === "rit").length
-        };
-
-        document.querySelectorAll("#filterPills .filter-pill").forEach((btn) => {
-          const f = btn.getAttribute("data-filter");
-          const labelMap = {
-            ALL: "Tutti",
-            Pagato: "Pagati",
-            DARE: "DARE",
-            "DARA'": "DARÀ",
-            rit: "rit"
-          };
-          btn.textContent = `${labelMap[f]} (${counts[f]})`;
-          btn.classList.toggle("active", statusFilter === f);
-        });
-
-        // 3. Render Tabella Partecipanti
-        renderParticipantsTable(calc);
-
-        // 4. Aggiorna Voci Extra e Formule (Righe 18-27)
-        const inputLibro = document.getElementById("inputLibro");
-        if (document.activeElement !== inputLibro) {
-          inputLibro.value = state.libro;
-        }
         document.getElementById("libroEffectHint").textContent =
-          `Aggiorna Attilio (B4): =60-B18+10 = ${formatEuro(calc.byRow[4].stimaComputed)}`;
+          "Attilio (B4): =60-B18+10 = " + formatEuro(calc.byRow[4].stimaComputed);
         document.getElementById("boxB21Val").textContent = formatEuro(calc.B21);
         document.getElementById("boxB23Val").textContent = formatEuro(calc.B23);
         document.getElementById("boxC23Val").textContent = formatEuro(calc.C23);
         document.getElementById("boxG2Val").textContent = formatEuro(calc.G2);
         document.getElementById("boxB27Val").textContent = formatEuro(calc.B27);
+      }
 
-        // 5. Render Griglia Excel 27x12
+      function renderAll() {
+        var calc = computeWorkbook();
+        updateSummaryIndicators(calc);
+
+        // Aggiorna conteggi sui pulsanti filtro
+        var counts = {
+          ALL: state.entries.length,
+          Pagato: 0,
+          DARE: 0,
+          "DARA'": 0,
+          rit: 0
+        };
+        state.entries.forEach(function (e) {
+          if (counts[e.stato] !== undefined) {
+            counts[e.stato] += 1;
+          }
+        });
+
+        var labelMap = {
+          ALL: "Tutti",
+          Pagato: "Pagati",
+          DARE: "DARE",
+          "DARA'": "DARÀ",
+          rit: "rit"
+        };
+
+        var pills = document.querySelectorAll("#filterPills .filter-pill");
+        pills.forEach(function (btn) {
+          var f = btn.getAttribute("data-filter");
+          btn.textContent = labelMap[f] + " (" + counts[f] + ")";
+          btn.classList.toggle("active", statusFilter === f);
+        });
+
+        // Aggiorna input libro B18
+        var inputLibro = document.getElementById("inputLibro");
+        if (document.activeElement !== inputLibro) {
+          inputLibro.value = state.libro;
+        }
+
+        renderParticipantsTable(calc);
         renderExcelGrid(calc);
       }
 
-      /**
-       * Costruisce le righe della tabella interattiva
-       */
       function renderParticipantsTable(calc) {
-        const tbody = document.getElementById("participantsTbody");
-        const q = searchQuery.trim().toLowerCase();
+        var tbody = document.getElementById("participantsTbody");
+        var q = searchQuery.trim().toLowerCase();
 
-        const filtered = state.entries.filter((entry) => {
+        var filtered = state.entries.filter(function (entry) {
           if (statusFilter !== "ALL" && entry.stato !== statusFilter) {
             return false;
           }
           if (!q) return true;
-          const matchMain = entry.name.toLowerCase().includes(q);
-          const matchSub = entry.subMembers.some((m) => m.toLowerCase().includes(q));
+          var matchMain = entry.name.toLowerCase().indexOf(q) !== -1;
+          var matchSub = entry.groupCols.some(function (m) {
+            return m.toLowerCase().indexOf(q) !== -1;
+          });
           return matchMain || matchSub;
         });
 
         if (filtered.length === 0) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="6" class="empty-state">
-                Nessun partecipante trovato con i filtri selezionati.
-              </td>
-            </tr>
-          `;
+          tbody.innerHTML =
+            "<tr><td colspan=\"6\" class=\"empty-state\">Nessun partecipante trovato con i filtri selezionati.</td></tr>";
           document.getElementById("tfootStima").textContent = "0 €";
           document.getElementById("tfootEffettivo").textContent = "0 €";
-          document.getElementById("tfootCount").textContent = "0 voci visualizzate";
+          document.getElementById("tfootCount").textContent = "0 di " + state.entries.length + " voci visualizzate";
           return;
         }
 
-        let filteredStima = 0;
-        let filteredEff = 0;
+        var filteredStima = 0;
+        var filteredEff = 0;
 
-        const rowsHtml = filtered
-          .map((entry) => {
-            const rowCalc = calc.byRow[entry.row];
+        var rowsHtml = filtered
+          .map(function (entry) {
+            var rowCalc = calc.byRow[entry.row];
             filteredStima += rowCalc.stimaComputed;
             filteredEff += rowCalc.effettivoNum;
 
-            const isGroup = entry.subMembers.length > 0;
-            const subHtml = isGroup
-              ? `<div class="submembers-list">
-                  ${entry.subMembers
-                    .map((member) => {
-                      const isMatch = q && member.toLowerCase().includes(q);
-                      return `<span class="submember-chip ${isMatch ? "highlight" : ""}">${escapeHtml(member)}</span>`;
-                    })
-                    .join("")}
-                </div>`
+            var isGroup = entry.groupCols.length > 0;
+            var subHtml = "";
+            if (isGroup) {
+              var chips = entry.groupCols
+                .map(function (member) {
+                  var isMatch = q && member.toLowerCase().indexOf(q) !== -1;
+                  return (
+                    "<span class=\"submember-chip " +
+                    (isMatch ? "highlight" : "") +
+                    "\">" +
+                    escapeHtml(member) +
+                    "</span>"
+                  );
+                })
+                .join("");
+              subHtml = "<div class=\"submembers-list\">" + chips + "</div>";
+            }
+
+            var formulaHtml = entry.stimaFormula
+              ? "<div><span class=\"formula-hint mono\">" + escapeHtml(entry.stimaFormula) + "</span></div>"
               : "";
 
-            const formulaHtml = entry.stimaFormula
-              ? `<div><span class="formula-hint mono">${escapeHtml(entry.stimaFormula)}</span></div>`
-              : "";
+            var effValueAttr = entry.effettivo !== null ? String(entry.effettivo) : "";
 
-            const noteText = isGroup
-              ? `Gruppo (${entry.subMembers.length} membri: E${entry.row}:I${entry.row})`
-              : entry.stato === "Pagato"
-              ? "Quota saldata"
-              : "Quota individuale";
+            var actionHtml =
+              entry.stato === "Pagato"
+                ? "<span class=\"paid-check-label\">✓ Saldato</span>"
+                : "<button type=\"button\" class=\"btn-pay-quick\" data-pay-row=\"" +
+                  entry.row +
+                  "\">Segna Pagato</button>";
 
-            const effValueAttr = entry.effettivo !== null ? entry.effettivo : "";
-
-            return `
-              <tr class="${isGroup ? "row-group" : ""}">
-                <td class="text-center"><span class="row-idx mono">${entry.row}</span></td>
-                <td>
-                  <div class="person-name">
-                    <span>${escapeHtml(entry.name)}</span>
-                    ${isGroup ? `<span class="group-badge">Gruppo</span>` : ""}
-                  </div>
-                  ${subHtml}
-                </td>
-                <td class="text-right">
-                  <div class="stima-amount num">${formatEuro(rowCalc.stimaComputed)}</div>
-                  ${formulaHtml}
-                </td>
-                <td class="text-right">
-                  <div class="effettivo-wrap">
-                    <input
-                      type="number"
-                      class="effettivo-input num"
-                      data-row="${entry.row}"
-                      min="0"
-                      step="1"
-                      placeholder="—"
-                      value="${effValueAttr}"
-                      aria-label="Effettivo raccolto per ${escapeHtml(entry.name)}"
-                    />
-                    <span style="color: var(--text-muted); font-size: 0.85rem;">€</span>
-                  </div>
-                </td>
-                <td class="text-center">
-                  <select
-                    class="stato-select ${getStatoCssClass(entry.stato)}"
-                    data-row="${entry.row}"
-                    aria-label="Stato quota per ${escapeHtml(entry.name)}"
-                  >
-                    <option value="Pagato" ${entry.stato === "Pagato" ? "selected" : ""}>Pagato</option>
-                    <option value="DARE" ${entry.stato === "DARE" ? "selected" : ""}>DARE</option>
-                    <option value="DARA'" ${entry.stato === "DARA'" ? "selected" : ""}>DARÀ</option>
-                    <option value="rit" ${entry.stato === "rit" ? "selected" : ""}>rit</option>
-                  </select>
-                </td>
-                <td style="font-size: 0.82rem; color: var(--text-secondary);">${noteText}</td>
-              </tr>
-            `;
+            return (
+              "<tr class=\"" +
+              (isGroup ? "row-group" : "") +
+              "\">" +
+              "<td class=\"text-center\"><span class=\"row-idx mono\">" +
+              entry.row +
+              "</span></td>" +
+              "<td>" +
+              "<div class=\"person-name\">" +
+              "<span>" +
+              escapeHtml(entry.name) +
+              "</span>" +
+              (isGroup ? "<span class=\"group-badge\">Gruppo H" + entry.row + ":L" + entry.row + "</span>" : "") +
+              "</div>" +
+              subHtml +
+              "</td>" +
+              "<td class=\"text-right\">" +
+              "<div class=\"stima-amount num\">" +
+              formatEuro(rowCalc.stimaComputed) +
+              "</div>" +
+              formulaHtml +
+              "</td>" +
+              "<td class=\"text-right\">" +
+              "<div class=\"effettivo-wrap\">" +
+              "<input type=\"number\" class=\"effettivo-input num\" data-row=\"" +
+              entry.row +
+              "\" min=\"0\" step=\"1\" placeholder=\"—\" value=\"" +
+              effValueAttr +
+              "\" aria-label=\"Effettivo raccolto per " +
+              escapeHtml(entry.name) +
+              "\" />" +
+              "<span style=\"color: var(--text-muted); font-size: 0.85rem;\">€</span>" +
+              "</div>" +
+              "</td>" +
+              "<td class=\"text-center\">" +
+              "<select class=\"stato-select " +
+              getStatoCssClass(entry.stato) +
+              "\" data-row=\"" +
+              entry.row +
+              "\" aria-label=\"Stato quota per " +
+              escapeHtml(entry.name) +
+              "\">" +
+              "<option value=\"Pagato\"" +
+              (entry.stato === "Pagato" ? " selected" : "") +
+              ">Pagato</option>" +
+              "<option value=\"DARE\"" +
+              (entry.stato === "DARE" ? " selected" : "") +
+              ">DARE</option>" +
+              "<option value=\"DARA'\"" +
+              (entry.stato === "DARA'" ? " selected" : "") +
+              ">DARÀ</option>" +
+              "<option value=\"rit\"" +
+              (entry.stato === "rit" ? " selected" : "") +
+              ">rit</option>" +
+              "</select>" +
+              "</td>" +
+              "<td class=\"text-center\">" +
+              actionHtml +
+              "</td>" +
+              "</tr>"
+            );
           })
           .join("");
 
@@ -1855,64 +1918,29 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
         document.getElementById("tfootStima").textContent = formatEuro(filteredStima);
         document.getElementById("tfootEffettivo").textContent = formatEuro(filteredEff);
         document.getElementById("tfootCount").textContent =
-          `${filtered.length} di ${state.entries.length} voci visualizzate`;
+          filtered.length + " di " + state.entries.length + " voci visualizzate";
       }
 
       /**
        * Costruisce la matrice esatta 27 righe x 12 colonne (A..L) di Foglio1
        */
       function buildExcelMatrix(calc) {
-        const COLS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
-        const TOTAL_ROWS = 27;
-
-        // Mappa celle: key = "A1", value = { value, formula, type, bold, stato }
-        const cells = {};
+        var COLS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+        var TOTAL_ROWS = 27;
+        var cells = {};
 
         function setCell(coord, obj) {
           cells[coord] = obj;
         }
 
-        // Riga 1: Intestazioni
-        setCell("A1", { value: "NOMI", isHeader: true });
-        setCell("B1", { value: "STIMA", isHeader: true });
-        setCell("C1", { value: "EFFETTIVO", isHeader: true });
-        setCell("D1", { value: "STATO", isHeader: true });
-        setCell("E1", { value: "GRUPPO", isHeader: true });
-        setCell("F1", { value: "TOT STIMA", isHeader: true });
-        setCell("G1", { value: "TOT FOGLIO", isHeader: true });
+        // Intestazioni esatte di Foglio1: B1="stima", C1="effettivo", F1="stima", G1="effettivo"
+        setCell("B1", { value: "stima", isHeader: true });
+        setCell("C1", { value: "effettivo", isHeader: true });
+        setCell("F1", { value: "stima", isHeader: true });
+        setCell("G1", { value: "effettivo", isHeader: true });
 
-        // Righe 2..15: I 14 partecipanti
-        state.entries.forEach((entry) => {
-          const r = entry.row;
-          const rowCalc = calc.byRow[r];
-
-          setCell(`A${r}`, { value: entry.name });
-          setCell(`B${r}`, {
-            value: rowCalc.stimaComputed,
-            formula: entry.stimaFormula,
-            isNum: true
-          });
-          if (entry.effettivo !== null) {
-            setCell(`C${r}`, {
-              value: entry.effettivo,
-              isNum: true
-            });
-          }
-          setCell(`D${r}`, {
-            value: entry.stato,
-            stato: entry.stato
-          });
-
-          // Sotto-membri gruppo nelle colonne E..I
-          entry.subMembers.forEach((member, idx) => {
-            const colLetter = COLS[4 + idx]; // E, F, G, H, I
-            if (colLetter) {
-              setCell(`${colLetter}${r}`, { value: member });
-            }
-          });
-        });
-
-        // F2 e G2
+        // Totali in E2:G2
+        setCell("E2", { value: "tot", bold: true });
         setCell("F2", {
           value: calc.F2,
           formula: "=SUM(B2:B15)",
@@ -1926,11 +1954,48 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           bold: true
         });
 
-        // Riga 18: libro
+        // Righe 2-15: Elenco partecipanti
+        state.entries.forEach(function (entry) {
+          var r = entry.row;
+          var rowCalc = calc.byRow[r];
+
+          setCell("A" + r, { value: entry.name });
+          setCell("B" + r, {
+            value: rowCalc.stimaComputed,
+            formula: entry.stimaFormula,
+            isNum: true
+          });
+
+          if (entry.effettivo !== null) {
+            setCell("C" + r, {
+              value: entry.effettivo,
+              isNum: true
+            });
+          }
+
+          // Colonna D: in Foglio1 i pagati hanno D vuoto (""), gli altri hanno DARE / DARA' / rit
+          var colDVal = entry.stato === "Pagato" ? "" : entry.stato;
+          if (colDVal !== "") {
+            setCell("D" + r, {
+              value: colDVal,
+              stato: colDVal
+            });
+          }
+
+          // Gruppi in H4:L4 e H10:L10 (indici colonne 7..11 -> H, I, J, K, L)
+          entry.groupCols.forEach(function (member, idx) {
+            var colLetter = COLS[7 + idx];
+            if (colLetter) {
+              setCell(colLetter + r, { value: member });
+            }
+          });
+        });
+
+        // Riga 18: A18="libro", B18=20
         setCell("A18", { value: "libro", bold: true });
         setCell("B18", { value: state.libro, isNum: true, bold: true });
 
-        // Riga 21: SICURO ANTICIPO
+        // Riga 21: A21="SICURO ANTICIPO", B21="=C2+C3+B4+C6+C5+C9+C12+C14"
         setCell("A21", { value: "SICURO ANTICIPO", bold: true });
         setCell("B21", {
           value: calc.B21,
@@ -1939,8 +2004,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           bold: true
         });
 
-        // Riga 23: Differenza F2 - B21 (B23) e Somma DARE/DARÀ (C23)
-        setCell("A23", { value: "RIMANENTE", bold: true });
+        // Riga 23: B23="=F2-B21", C23="=B10+B7+B8+B15+B11+B13"
         setCell("B23", {
           value: calc.B23,
           formula: "=F2-B21",
@@ -1954,8 +2018,7 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           bold: true
         });
 
-        // Riga 27: Calcolo B27
-        setCell("A27", { value: "NETTO (365-120)", bold: true });
+        // Riga 27: B27="=365-120"
         setCell("B27", {
           value: calc.B27,
           formula: "=365-120",
@@ -1963,37 +2026,40 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           bold: true
         });
 
-        return { COLS, TOTAL_ROWS, cells };
+        return { COLS: COLS, TOTAL_ROWS: TOTAL_ROWS, cells: cells };
       }
 
-      /**
-       * Renderizza la griglia Excel 27x12 nella seconda tab
-       */
       function renderExcelGrid(calc) {
-        const table = document.getElementById("excelGridTable");
-        const { COLS, TOTAL_ROWS, cells } = buildExcelMatrix(calc);
+        var table = document.getElementById("excelGridTable");
+        var matrix = buildExcelMatrix(calc);
+        var COLS = matrix.COLS;
+        var TOTAL_ROWS = matrix.TOTAL_ROWS;
+        var cells = matrix.cells;
 
-        let html = "<thead><tr><th class='corner-hdr'></th>";
-        COLS.forEach((c) => {
-          html += `<th class="col-hdr">${c}</th>`;
+        var html = "<thead><tr><th class=\"corner-hdr\"></th>";
+        COLS.forEach(function (c) {
+          html += "<th class=\"col-hdr\">" + c + "</th>";
         });
         html += "</tr></thead><tbody>";
 
-        for (let r = 1; r <= TOTAL_ROWS; r++) {
-          html += `<tr><td class="row-hdr num">${r}</td>`;
-          COLS.forEach((c) => {
-            const coord = `${c}${r}`;
-            const cell = cells[coord];
-            const classes = ["xl-cell"];
-            if (coord === selectedExcelCell) classes.push("selected");
+        for (var r = 1; r <= TOTAL_ROWS; r++) {
+          html += "<tr><td class=\"row-hdr num\">" + r + "</td>";
+          for (var cIdx = 0; cIdx < COLS.length; cIdx++) {
+            var c = COLS[cIdx];
+            var coord = c + r;
+            var cell = cells[coord];
+            var classes = ["xl-cell"];
+            if (coord === selectedExcelCell) {
+              classes.push("selected");
+            }
 
-            let displayVal = "";
+            var displayVal = "";
             if (cell) {
               if (cell.isHeader) classes.push("xl-header-row");
               if (cell.bold) classes.push("xl-bold");
               if (cell.stato) {
-                const sKey = cell.stato === "DARA'" ? "DARA" : cell.stato;
-                classes.push(`xl-stato-${sKey}`);
+                var sKey = cell.stato === "DARA'" ? "DARA" : cell.stato;
+                classes.push("xl-stato-" + sKey);
               }
 
               if (cell.formula) {
@@ -2007,59 +2073,56 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
                 }
               } else {
                 if (cell.isNum) classes.push("xl-num");
-                displayVal = cell.value !== undefined && cell.value !== null ? escapeHtml(String(cell.value)) : "";
+                displayVal =
+                  cell.value !== undefined && cell.value !== null ? escapeHtml(String(cell.value)) : "";
               }
             }
 
-            html += `<td class="${classes.join(" ")}" data-coord="${coord}">${displayVal}</td>`;
-          });
+            html += "<td class=\"" + classes.join(" ") + "\" data-coord=\"" + coord + "\">" + displayVal + "</td>";
+          }
           html += "</tr>";
         }
 
         html += "</tbody>";
         table.innerHTML = html;
 
-        // Aggiorna barra formula in alto
         updateFormulaBar(cells);
       }
 
       function updateFormulaBar(cells) {
-        const coordEl = document.getElementById("fbCoord");
-        const contentEl = document.getElementById("fbContent");
+        var coordEl = document.getElementById("fbCoord");
+        var contentEl = document.getElementById("fbContent");
         coordEl.textContent = selectedExcelCell;
 
-        const cell = cells[selectedExcelCell];
+        var cell = cells[selectedExcelCell];
         if (!cell) {
-          contentEl.textContent = "(cella vuota)";
+          contentEl.textContent = selectedExcelCell + ": (cella vuota)";
           return;
         }
         if (cell.formula) {
-          contentEl.textContent = `${cell.formula}   →   Valore calcolato: ${cell.value}`;
+          contentEl.textContent = selectedExcelCell + ": " + cell.formula + "  (Valore: " + cell.value + ")";
         } else {
-          contentEl.textContent = String(cell.value);
+          contentEl.textContent = selectedExcelCell + ": " + String(cell.value);
         }
       }
 
-      /**
-       * Esporta CSV compatibile con Excel italiano (separatore ;)
-       */
       function exportCsv() {
-        const calc = computeWorkbook();
-        const lines = [
-          ["Riga", "Nome", "Stima (€)", "Effettivo (€)", "Stato", "Membri Gruppo", "Formula"].join(";")
+        var calc = computeWorkbook();
+        var lines = [
+          ["Riga", "Nome", "Stima (€)", "Effettivo (€)", "Stato", "Gruppo (H-L)", "Formula"].join(";")
         ];
 
-        state.entries.forEach((entry) => {
-          const rc = calc.byRow[entry.row];
+        state.entries.forEach(function (entry) {
+          var rc = calc.byRow[entry.row];
           lines.push(
             [
               entry.row,
-              `"${entry.name}"`,
+              "\"" + entry.name + "\"",
               rc.stimaComputed,
               entry.effettivo !== null ? entry.effettivo : "",
-              `"${entry.stato}"`,
-              `"${entry.subMembers.join(", ")}"`,
-              `"${entry.stimaFormula || ""}"`
+              "\"" + entry.stato + "\"",
+              "\"" + entry.groupCols.join(", ") + "\"",
+              "\"" + (entry.stimaFormula || "") + "\""
             ].join(";")
           );
         });
@@ -2074,10 +2137,10 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
         lines.push(["C23", "Somma DARE/DARA'", calc.C23, "", "", "", "=B10+B7+B8+B15+B11+B13"].join(";"));
         lines.push(["B27", "Calcolo B27", calc.B27, "", "", "", "=365-120"].join(";"));
 
-        const csvContent = "\uFEFF" + lines.join("\r\n");
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
+        var csvContent = "\uFEFF" + lines.join("\r\n");
+        var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
         link.href = url;
         link.download = "regalstef_riepilogo.csv";
         document.body.appendChild(link);
@@ -2085,33 +2148,18 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        showToast(`<span>File <strong>regalstef_riepilogo.csv</strong> esportato correttamente.</span>`, false, 3000);
+        showToast("<span>File <strong>regalstef_riepilogo.csv</strong> scaricato correttamente.</span>", false, 3000);
       }
 
-      /**
-       * Escape HTML di sicurezza
-       */
-      function escapeHtml(str) {
-        return String(str)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-
-      /**
-       * Collegamento eventi UI
-       */
       function bindEvents() {
-        // Cambio Tab
-        const tabBtnInteractive = document.getElementById("tabBtnInteractive");
-        const tabBtnExcel = document.getElementById("tabBtnExcel");
-        const panelInteractive = document.getElementById("panelInteractive");
-        const panelExcel = document.getElementById("panelExcel");
+        // Cambio Schede
+        var tabBtnInteractive = document.getElementById("tabBtnInteractive");
+        var tabBtnExcel = document.getElementById("tabBtnExcel");
+        var panelInteractive = document.getElementById("panelInteractive");
+        var panelExcel = document.getElementById("panelExcel");
 
         function switchTab(target) {
-          activeTab = target;
-          const isInt = target === "interactive";
+          var isInt = target === "interactive";
           tabBtnInteractive.classList.toggle("active", isInt);
           tabBtnInteractive.setAttribute("aria-selected", String(isInt));
           panelInteractive.classList.toggle("active", isInt);
@@ -2121,20 +2169,25 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           panelExcel.classList.toggle("active", !isInt);
         }
 
-        tabBtnInteractive.addEventListener("click", () => switchTab("interactive"));
-        tabBtnExcel.addEventListener("click", () => switchTab("excel"));
+        tabBtnInteractive.addEventListener("click", function () {
+          switchTab("interactive");
+        });
+
+        tabBtnExcel.addEventListener("click", function () {
+          switchTab("excel");
+        });
 
         // Ricerca
-        const searchInput = document.getElementById("searchInput");
-        const searchClear = document.getElementById("searchClear");
+        var searchInput = document.getElementById("searchInput");
+        var searchClear = document.getElementById("searchClear");
 
-        searchInput.addEventListener("input", (e) => {
+        searchInput.addEventListener("input", function (e) {
           searchQuery = e.target.value;
           searchClear.classList.toggle("visible", searchQuery.length > 0);
           renderAll();
         });
 
-        searchClear.addEventListener("click", () => {
+        searchClear.addEventListener("click", function () {
           searchQuery = "";
           searchInput.value = "";
           searchClear.classList.remove("visible");
@@ -2142,107 +2195,124 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
           renderAll();
         });
 
-        // Filtri Stato
-        document.getElementById("filterPills").addEventListener("click", (e) => {
-          const btn = e.target.closest(".filter-pill");
+        // Filtri rapidi per stato
+        document.getElementById("filterPills").addEventListener("click", function (e) {
+          var btn = e.target.closest(".filter-pill");
           if (!btn) return;
           statusFilter = btn.getAttribute("data-filter");
           renderAll();
         });
 
-        // Modifica Effettivo & Stato nella tabella (delegazione eventi)
-        const tbody = document.getElementById("participantsTbody");
+        // Eventi tabella partecipanti
+        var tbody = document.getElementById("participantsTbody");
 
-        tbody.addEventListener("input", (e) => {
-          const input = e.target.closest(".effettivo-input");
+        tbody.addEventListener("input", function (e) {
+          var input = e.target.closest(".effettivo-input");
           if (!input) return;
-          const rowNum = Number(input.getAttribute("data-row"));
-          const entry = state.entries.find((item) => item.row === rowNum);
+          var rowNum = Number(input.getAttribute("data-row"));
+          var entry = state.entries.find(function (item) {
+            return item.row === rowNum;
+          });
           if (!entry) return;
 
-          const valStr = input.value.trim();
+          var valStr = input.value.trim();
           if (valStr === "") {
             entry.effettivo = null;
           } else {
-            const parsed = Number(valStr);
+            var parsed = Number(valStr);
             entry.effettivo = !isNaN(parsed) && parsed >= 0 ? parsed : 0;
           }
           saveState();
-          // Aggiorna KPI, footer e griglia senza perdere il focus sull'input corrente
-          const calc = computeWorkbook();
-          document.getElementById("kpiTotaleStima").textContent = formatEuro(calc.F2);
-          document.getElementById("kpiEffettivoRaccolto").textContent = formatEuro(calc.sumC2C15);
-          document.getElementById("kpiG2Note").textContent = `Excel G2 = SUM(C2:C34) = ${formatEuro(calc.G2)}`;
-          const pct = calc.F2 > 0 ? Math.min(100, Math.max(0, (calc.sumC2C15 / calc.F2) * 100)) : 0;
-          document.getElementById("kpiProgressFill").style.width = `${pct.toFixed(1)}%`;
-          document.getElementById("kpiSicuroAnticipo").textContent = formatEuro(calc.B21);
-          document.getElementById("kpiRimanente").textContent = formatEuro(calc.B23);
-          document.getElementById("kpiRimanenteSub").textContent =
-            `Diff. F2-B21: ${formatEuro(calc.B23)} • DARE/DARÀ: ${formatEuro(calc.C23)}`;
-          document.getElementById("boxB21Val").textContent = formatEuro(calc.B21);
-          document.getElementById("boxB23Val").textContent = formatEuro(calc.B23);
-          document.getElementById("boxC23Val").textContent = formatEuro(calc.C23);
-          document.getElementById("boxG2Val").textContent = formatEuro(calc.G2);
 
-          // Ricalcola somma righe visibili nel tfoot
-          const q = searchQuery.trim().toLowerCase();
-          let filteredEff = 0;
-          state.entries.forEach((en) => {
+          var calc = computeWorkbook();
+          updateSummaryIndicators(calc);
+
+          var q = searchQuery.trim().toLowerCase();
+          var filteredEff = 0;
+          state.entries.forEach(function (en) {
             if (statusFilter !== "ALL" && en.stato !== statusFilter) return;
-            if (q && !en.name.toLowerCase().includes(q) && !en.subMembers.some((m) => m.toLowerCase().includes(q))) return;
+            if (
+              q &&
+              en.name.toLowerCase().indexOf(q) === -1 &&
+              !en.groupCols.some(function (m) {
+                return m.toLowerCase().indexOf(q) !== -1;
+              })
+            ) {
+              return;
+            }
             filteredEff += calc.byRow[en.row].effettivoNum;
           });
           document.getElementById("tfootEffettivo").textContent = formatEuro(filteredEff);
           renderExcelGrid(calc);
         });
 
-        tbody.addEventListener("change", (e) => {
-          const select = e.target.closest(".stato-select");
+        tbody.addEventListener("change", function (e) {
+          var select = e.target.closest(".stato-select");
           if (!select) return;
-          const rowNum = Number(select.getAttribute("data-row"));
-          const entry = state.entries.find((item) => item.row === rowNum);
+          var rowNum = Number(select.getAttribute("data-row"));
+          var entry = state.entries.find(function (item) {
+            return item.row === rowNum;
+          });
           if (!entry) return;
 
           entry.stato = select.value;
+          entry.excelD = entry.stato === "Pagato" ? "" : entry.stato;
           saveState();
           renderAll();
         });
 
-        // Modifica voce extra "libro" (B18)
-        const inputLibro = document.getElementById("inputLibro");
-        inputLibro.addEventListener("input", (e) => {
-          const val = Number(e.target.value);
+        tbody.addEventListener("click", function (e) {
+          var payBtn = e.target.closest(".btn-pay-quick");
+          if (!payBtn) return;
+          var rowNum = Number(payBtn.getAttribute("data-pay-row"));
+          var entry = state.entries.find(function (item) {
+            return item.row === rowNum;
+          });
+          if (!entry) return;
+
+          var calc = computeWorkbook();
+          entry.effettivo = calc.byRow[rowNum].stimaComputed;
+          entry.stato = "Pagato";
+          entry.excelD = "";
+          saveState();
+          renderAll();
+        });
+
+        // Modifica "libro" (B18)
+        var inputLibro = document.getElementById("inputLibro");
+        inputLibro.addEventListener("input", function (e) {
+          var val = Number(e.target.value);
           state.libro = !isNaN(val) && val >= 0 ? val : 0;
           saveState();
           renderAll();
         });
 
-        document.getElementById("btnLibroMinus").addEventListener("click", () => {
+        document.getElementById("btnLibroMinus").addEventListener("click", function () {
           state.libro = Math.max(0, state.libro - 5);
           saveState();
           renderAll();
         });
 
-        document.getElementById("btnLibroPlus").addEventListener("click", () => {
+        document.getElementById("btnLibroPlus").addEventListener("click", function () {
           state.libro = state.libro + 5;
           saveState();
           renderAll();
         });
 
         // Toggle Mostra Formule nella Griglia Excel
-        const btnToggleFormulas = document.getElementById("btnToggleFormulas");
-        const toggleFormulasLabel = document.getElementById("toggleFormulasLabel");
-        btnToggleFormulas.addEventListener("click", () => {
+        var btnToggleFormulas = document.getElementById("btnToggleFormulas");
+        var toggleFormulasLabel = document.getElementById("toggleFormulasLabel");
+        btnToggleFormulas.addEventListener("click", function () {
           showRawFormulas = !showRawFormulas;
           btnToggleFormulas.classList.toggle("active", showRawFormulas);
           btnToggleFormulas.setAttribute("aria-pressed", String(showRawFormulas));
-          toggleFormulasLabel.textContent = showRawFormulas ? "Mostra Valori Calcolati" : "Mostra Formule (=fx)";
+          toggleFormulasLabel.textContent = showRawFormulas ? "Mostra Valori" : "Mostra Formule (=fx)";
           renderExcelGrid(computeWorkbook());
         });
 
         // Selezione cella nella Griglia Excel
-        document.getElementById("excelGridTable").addEventListener("click", (e) => {
-          const td = e.target.closest("td.xl-cell");
+        document.getElementById("excelGridTable").addEventListener("click", function (e) {
+          var td = e.target.closest("td.xl-cell");
           if (!td) return;
           selectedExcelCell = td.getAttribute("data-coord");
           renderExcelGrid(computeWorkbook());
@@ -2252,28 +2322,51 @@ document.getElementById("btnCancelReset").addEventListener("click", hideToast);
         document.getElementById("btnExportCsv").addEventListener("click", exportCsv);
 
         // Ripristina Dati Originali (con conferma inline)
-        document.getElementById("btnResetAsk").addEventListener("click", () => {
+        document.getElementById("btnResetAsk").addEventListener("click", function () {
           showToast(
-            `<span>Vuoi ripristinare tutti i valori originali di <strong>regalstef.xlsx</strong>? Le modifiche locali andranno perse.</span>
-             <div class="toast-actions">
-               <button type="button" id="btnConfirmReset" class="btn btn-sm btn-danger">Sì, ripristina</button>
-               <button type="button" id="btnCancelReset" class="btn btn-sm btn-neutral">Annulla</button>
-             </div>`,
+            "<span>Vuoi ripristinare tutti i valori originali di <strong>regalstef.xlsx</strong>?</span>" +
+              "<div class=\"toast-actions\">" +
+              "<button type=\"button\" id=\"btnConfirmReset\" class=\"btn btn-sm btn-danger\">Sì, ripristina</button>" +
+              "<button type=\"button\" id=\"btnCancelReset\" class=\"btn btn-sm btn-neutral\">Annulla</button>" +
+              "</div>",
             true,
             0
           );
 
-          document.getElementById("btnConfirmReset").addEventListener("click", () => {
-            state = getFreshDefaultState();
-            saveState();
-            searchQuery = "";
-            searchInput.value = "";
-            searchClear.classList.remove("visible");
-            statusFilter = "ALL";
-            renderAll();
-            showToast(`<span>Dati originali di <strong>regalstef.xlsx</strong> ripristinati.</span>`, false, 3000);
-          });
+          var btnConfirm = document.getElementById("btnConfirmReset");
+          var btnCancel = document.getElementById("btnCancelReset");
 
+          if (btnConfirm) {
+            btnConfirm.addEventListener("click", function () {
+              state = getFreshDefaultState();
+              saveState();
+              searchQuery = "";
+              searchInput.value = "";
+              searchClear.classList.remove("visible");
+              statusFilter = "ALL";
+              renderAll();
+              showToast("<span>Dati originali di <strong>regalstef.xlsx</strong> ripristinati.</span>", false, 3000);
+            });
+          }
+
+          if (btnCancel) {
+            btnCancel.addEventListener("click", hideToast);
+          }
+        });
+      }
+
+      function init() {
+        state = loadState();
+        bindEvents();
+        renderAll();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
   </script>
 </body>
 </html>
